@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Tank Battle by Lapis Yamz - V2.7.0 (Controls/UI/Events/Skills Update)</title>
+    <title>Lapis Tank Battle x For The Last Time - V2.8.0 (Collab Update)</title>
     <style>
         body {
             margin: 0;
@@ -58,17 +58,30 @@
             border-radius: 1px;
             transition: width 0.2s ease-out;
         }
-        .shield-indicator {
+        .shield-indicator { /* For general shield */
             position: absolute;
             width: 10px;
             height: 10px;
             background-color: deepskyblue;
             border-radius: 50%;
             border: 1px solid #fff;
-            top: -12px;
+            top: -12px; 
             left: 50%;
             transform: translateX(-50%);
         }
+        .immortal-indicator { /* For Spike Striker's Unyielding skill */
+             position: absolute;
+             width: 12px; /* Slightly larger */
+             height: 12px;
+             background-color: gold; /* Gold for immortality */
+             border-radius: 50%;
+             border: 2px solid #fff;
+             box-shadow: 0 0 8px gold;
+             top: -14px; /* Adjust position */
+             left: calc(50% + 15px); /* Position next to shield or alone */
+             transform: translateX(-50%);
+        }
+
 
         .joystick-container-base {
             position: fixed;
@@ -117,7 +130,7 @@
             color: white;
             border: 2px solid rgba(120, 30, 220, 0.8);
             border-radius: 50%;
-            font-size: 13px;
+            font-size: 11px; /* Slightly smaller for more text */
             font-weight: bold;
             display: flex;
             flex-direction: column;
@@ -131,7 +144,7 @@
             padding: 5px;
             box-sizing: border-box;
             text-align: center;
-            line-height: 1.2;
+            line-height: 1.1; /* Adjusted line height */
         }
         .skill-button-base.on-cooldown {
             background-color: rgba(100, 100, 100, 0.7);
@@ -139,8 +152,16 @@
             border-color: rgba(80,80,80,0.8);
             cursor: not-allowed;
         }
+        .skill-button-base .skill-name-text {
+            display: block;
+            font-size: 0.9em;
+        }
+        .skill-button-base .charges-text {
+            font-size: 0.8em;
+            color: #ffdd77;
+        }
         .skill-button-base .cooldown-text {
-            font-size: 16px;
+            font-size: 14px; /* Smaller cooldown text if name is long */
             font-weight: bold;
         }
 
@@ -178,7 +199,11 @@
         }
 
         /* --- Menu Screen Redesign --- */
-        #menuScreen { justify-content: flex-start; }
+        #menuScreen { 
+            justify-content: flex-start; 
+            /* For collab theme - could add gradient or specific images later */
+            background: linear-gradient(135deg, #2c3e50 0%, #fd746c 50%, #1976D2 100%); /* Example gradient */
+        }
         .menu-top-bar {
             width: 100%;
             padding: 10px 15px;
@@ -186,7 +211,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background-color: rgba(0,0,0,0.4); /* Darker top bar */
+            background-color: rgba(0,0,0,0.5); /* Darker top bar */
             flex-shrink: 0;
         }
         .menu-top-bar button {
@@ -195,7 +220,21 @@
         }
         #loggedInUserDisplay { font-size: clamp(0.9em, 2.5vw, 1.1em); color: #FFD700; }
 
-        #menuScreen h1 { margin-top: clamp(10px, 3vh, 20px); margin-bottom: clamp(5px, 1vh, 10px); }
+        #menuScreen .game-title-collab {
+            font-size: clamp(2.0em, 6vw, 3.5em); /* Slightly smaller than H1 if needed */
+            font-weight: bold;
+            color: #fff;
+            margin-top: clamp(10px, 3vh, 20px);
+            margin-bottom: clamp(5px, 1vh, 10px);
+            text-shadow: 0 0 5px #ffcc00, 0 0 10px #ffcc00, 0 0 15px #ff00de, 0 0 20px #ff00de, 0 0 25px #ff00de, 0 0 30px #00c3ff, 0 0 35px #00c3ff;
+            animation: glowTitle 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glowTitle {
+            from { text-shadow: 0 0 5px #ffcc00, 0 0 10px #ffcc00, 0 0 15px #ff00de, 0 0 20px #ff00de, 0 0 25px #00c3ff, 0 0 30px #00c3ff, 0 0 35px #00c3ff; }
+            to { text-shadow: 0 0 10px #ffcc00, 0 0 15px #ffcc00, 0 0 20px #ff00de, 0 0 25px #ff00de, 0 0 30px #00c3ff, 0 0 35px #00c3ff, 0 0 40px #00c3ff; }
+        }
+        
         #menuScreen > p { margin-bottom: clamp(15px, 4vh, 30px); } /* This targets the <p>By Lapis Yamz</p> */
 
         .menu-main-actions {
@@ -236,21 +275,22 @@
 
         /* Event Screen Specifics (previously #eventSection) */
         #eventScreen .event-section-item { /* New class for individual event blocks */
-            background-color: rgba(30,30,50,0.5);
+            background-color: rgba(40,40,60,0.6); /* Slightly more prominent */
             padding: 15px;
             border-radius: 10px;
             margin: 10px 0;
             width: 90%;
-            max-width: 450px;
-            border: 1px solid rgba(100,100,200,0.3);
+            max-width: 500px; /* Increased max-width */
+            border: 1px solid rgba(120,120,220,0.4);
         }
         #eventScreen .event-section-item h3 {
             color: #FFD700; /* Gold */
             margin-top: 0; margin-bottom: 10px;
-            font-size: clamp(1.1em, 3vw, 1.4em);
+            font-size: clamp(1.2em, 3.2vw, 1.5em);
         }
         #eventScreen .event-section-item p { font-size: clamp(0.85em, 2.5vw, 1.05em); margin-bottom: 8px; color: #ddd; }
         #eventScreen .event-timer { font-weight: bold; color: #FFA07A; /* Light Salmon */ }
+        #eventScreen .mission-progress { font-size: 0.9em; color: #B0E0E6; margin-top: 5px; }
         
         .claimButton { /* Class for claim buttons */
             background: linear-gradient(145deg, #FF9800, #F57C00); /* Orange gradient */
@@ -272,6 +312,38 @@
             width: 90%;
             max-width: 380px; /* Slightly smaller */
             overflow: hidden; /* Helps contain children */
+        }
+        /* For mobile, skin selector is toggled */
+        @media (max-width: 768px) {
+            #mySkinsSection {
+                display: none; /* Hidden by default, toggled by button */
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background-color: rgba(30,30,50,0.95);
+                padding: 20px;
+                border-radius: 10px;
+                z-index: 1000;
+                width: 80%;
+                max-width: 300px;
+                box-shadow: 0 0 15px rgba(0,0,0,0.5);
+            }
+            #mySkinsSection.mobile-visible {
+                display: block;
+            }
+            #mobileMySkinCloseButton {
+                display: block;
+                position: absolute;
+                top: 5px; right: 10px;
+                background: none; border: none; color: white; font-size: 1.5em;
+                cursor: pointer;
+            }
+        }
+        #mobileMySkinButton { display: none; } /* Hidden by default, shown for mobile via JS */
+         @media (max-width: 768px) {
+            #mobileMySkinButton { display: inline-block !important; }
+            #mapSelectorContainer { display: none; } /* Hide from main menu on mobile, use map screen */
         }
 
 
@@ -418,6 +490,15 @@
             transform: translateY(-5px);
             box-shadow: 0 0 25px gold, 0 0 40px #FFFF99, 0 8px 25px rgba(0,0,0,0.4);
         }
+        .shopItem.event-skin-glow { /* For collab/event skins if desired */
+            box-shadow: 0 0 15px #ff4081, 0 0 25px #1976D2, 0 5px 15px rgba(0,0,0,0.5);
+            border: 1px solid #ffcc00;
+        }
+        .shopItem.event-skin-glow:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0 22px #ff4081, 0 0 32px #1976D2, 0 8px 25px rgba(0,0,0,0.4);
+        }
+
 
         .shopItem h3 { margin-top: 0; margin-bottom: 8px; color: #FFD700; font-size: clamp(1.1em, 2.8vw, 1.4em);}
         .shopItem p { font-size: clamp(0.8em, 2.3vw, 1em); margin-bottom: 8px; color: #bbb;}
@@ -533,7 +614,7 @@
             padding-left: 30px;
             margin: 0;
             text-align: left;
-            max-height: 30vh; /* Max height for list */
+            max-height: 25vh; /* Adjusted max height */
             overflow-y: auto;
         }
         #leaderboardScreen li {
@@ -610,6 +691,25 @@
             font-size: 0.9em;
         }
 
+        /* Map Selector Screen */
+        #mapSelectorScreen .map-selection-button {
+            display: block; /* Make them stack */
+            width: clamp(250px, 60vw, 380px); /* Consistent width */
+            margin: 10px auto; /* Centered */
+            padding: 15px 20px;
+            font-size: 1.2em;
+            background: linear-gradient(145deg, #4CAF50, #388E3C); /* Green theme */
+            color: white;
+            border: none;
+            border-radius: 8px;
+            box-shadow: 0 4px 0 #2E7D32;
+            cursor: pointer;
+        }
+        #mapSelectorScreen .map-selection-button:hover {
+             background: linear-gradient(145deg, #66BB6A, #43A047);
+        }
+
+
     </style>
 </head>
 <body>
@@ -624,14 +724,15 @@
                 <button class="baseButton backButton" id="logoutButton" style="font-size: 0.8em; padding: 6px 10px; min-width:auto; margin-left: 5px; display:none;">Logout</button>
             </div>
             <div>
+                 <button class="baseButton menuButton" id="mobileMySkinButton" style="font-size: 0.8em; padding: 6px 10px; min-width:auto; display:none;">👤 My Skin</button>
                 <button class="baseButton menuButton" id="musicToggleButton" style="font-size: 0.8em; padding: 6px 10px; min-width:auto;">🎵 Mute</button>
                 <button class="baseButton menuButton" id="fullscreenButtonMenu" style="font-size: 0.8em; padding: 6px 10px; min-width:auto;">↔️ Fullscreen</button>
             </div>
         </div>
 
         <div class="screen-content-wrapper"> <!-- Wrap content for scrolling -->
-            <h1>Tank Battle</h1>
-            <p>By Lapis Yamz</p> <!-- This P tag is targeted by #menuScreen > p currently -->
+            <h1 class="game-title-collab">Lapis Tank Battle <span style="color:#ff4081;">X</span> For The Last Time</h1>
+            <p>By Lapis Yamz</p> 
 
             <div class="menu-main-actions">
                 <button class="menuButton baseButton large-menu-button" id="vsCPUButton">VS Computer</button>
@@ -643,36 +744,48 @@
                  <button class="shopButton baseButton secondary-menu-button" id="shopButtonMenu">🛍️ Shop</button>
                  <button class="profileButton baseButton secondary-menu-button" id="profileButtonMenu">👤 Profile</button>
                  <button class="leaderboardButton baseButton secondary-menu-button" id="leaderboardButtonMenu">🏆 Leaderboard</button>
-                 <button class="eventsButton baseButton secondary-menu-button" id="eventsButtonMenu">📅 Events</button> <!-- New Events Button -->
+                 <button class="eventsButton baseButton secondary-menu-button" id="eventsButtonMenu">📅 Events</button> 
                  <button class="howToPlayButton baseButton secondary-menu-button" id="howToPlayButton">❓ How to Play</button>
             </div>
 
-            <div id="mapSelectorContainer">
+            <div id="mapSelectorContainer"> <!-- Hidden on mobile by CSS, use map screen instead -->
                 <h2>Select Map:</h2>
                 <select id="mapSelectorMenu"></select>
             </div>
 
-            <div id="mySkinsSection">
+            <div id="mySkinsSection"> <!-- Toggled on mobile -->
+                <button id="mobileMySkinCloseButton" style="display:none;">&times;</button>
                 <h2>My Tank Skin:</h2>
                 <select id="skinSelector"></select>
             </div>
         </div>
     </div>
 
-    <div id="eventScreen" class="screen"> <!-- New Event Screen -->
+    <div id="eventScreen" class="screen"> 
         <div class="screen-content-wrapper">
             <h1>🎉 Special Events 🎉</h1>
-            <div class="event-section-item" id="rcbEventSection">
-                <h3>🏆 RCB Won IPL! 🏆</h3>
-                <p>As a reward, claim your free Sniper skin!</p>
-                <button id="rcbClaimButton" class="baseButton claimButton">Claim Sniper Skin</button>
+            
+            <div class="event-section-item" id="collabEventSection">
+                 <h3>🚀 The Coolest Collaboration is HERE! 🚀</h3>
+                 <p>LapisTankBattle <span style="color:#ff4081; font-weight:bold;">X</span> For The Last Time!</p>
+                 <p>Event Ends In: <span id="collabTimer" class="event-timer">Loading...</span></p>
+                 <hr style="border-color: rgba(100,100,200,0.2); margin: 15px 0; width: 80%;">
+                 
+                 <h4>Unlock Monitor Fury! (Red Heart Tank)</h4>
+                 <p>Mission: Win 150 games against Hard AI.</p>
+                 <p class="mission-progress" id="missionProgressHeartTank">Progress: 0 / 150</p>
+                 <button id="claimHeartTankButton" class="baseButton claimButton" disabled>Claim Monitor Fury</button>
+                 <br><br>
+                 <h4>Unlock Spike Striker! (Blue Soccer Tank)</h4>
+                 <p>Mission: Win 100 games against Freestyle AI.</p>
+                 <p class="mission-progress" id="missionProgressSoccerTank">Progress: 0 / 100</p>
+                 <button id="claimSoccerTankButton" class="baseButton claimButton" disabled>Claim Spike Striker</button>
             </div>
             <hr style="border-color: rgba(100,100,200,0.2); margin: 20px 0; width: 80%;">
-            <div class="event-section-item" id="collabEventSection">
-                 <h3>🚀 Upcoming Collaboration! 🚀</h3>
-                 <p>LapisTankBattle X For the Last Time!</p>
-                 <p>Event Starts In: <span id="collabTimer" class="event-timer">Loading...</span></p>
-                 <p style="font-size:0.9em; color: #ccc;"><em>Get ready for 2 New Skins, Free Rewards & more!</em></p>
+            <div class="event-section-item" id="rcbEventSection">
+                <h3>🏆 RCB Won IPL! 🏆</h3>
+                <p>As a reward for the historic win, here's a special skin for you!</p>
+                <button id="rcbClaimButton" class="baseButton claimButton">Claim RCB Champion Skin</button>
             </div>
             <button class="backButton baseButton" id="backToMenuFromEvent">Back to Menu</button>
         </div>
@@ -736,6 +849,16 @@
         </div>
     </div>
 
+    <div id="mapSelectorScreen" class="screen">
+        <div class="screen-content-wrapper">
+            <h1>Select Map</h1>
+            <div id="mapSelectionButtonsContainer">
+                <!-- Map buttons will be populated here by JavaScript -->
+            </div>
+            <button class="backButton baseButton" id="backToMenuFromMapSelector">Back to Menu</button>
+        </div>
+    </div>
+
 
     <div id="difficultyScreen" class="screen">
         <div class="screen-content-wrapper">
@@ -770,6 +893,8 @@
                 <p class="stat"><span class="stat-label">Games Played:</span> <span id="profileGamesPlayed" class="stat-value">0</span></p>
                 <p class="stat"><span class="stat-label">Wins:</span> <span id="profileWins" class="stat-value">0</span></p>
                 <p class="stat"><span class="stat-label">Losses:</span> <span id="profileLosses" class="stat-value">0</span></p>
+                <p class="stat"><span class="stat-label">Hard AI Wins:</span> <span id="profileHardAIWins" class="stat-value">0</span></p>
+                <p class="stat"><span class="stat-label">Freestyle AI Wins:</span> <span id="profileFreestyleAIWins" class="stat-value">0</span></p>
                 <div>
                     <h3 style="color: #FFC107; margin-top: 15px;">Owned Skins:</h3>
                     <ul id="ownedSkinsList"></ul>
@@ -816,7 +941,11 @@
         <div id="joystickHandleP1Aim" class="joystick-handle-base"></div>
     </div>
     <div id="skillButtonContainerP1" class="skill-button-container-base">
-        <button id="skillButtonP1" class="skill-button-base">SKILL <span class="cooldown-text"></span></button>
+        <button id="skillButtonP1" class="skill-button-base">
+            <span class="skill-name-text">SKILL</span>
+            <span class="charges-text"></span>
+            <span class="cooldown-text"></span>
+        </button>
     </div>
 
     <!-- Player 2 Controls -->
@@ -826,8 +955,12 @@
     <div id="joystickContainerP2Aim" class="joystick-container-base">
         <div id="joystickHandleP2Aim" class="joystick-handle-base"></div>
     </div>
-    <div id="skillButtonContainerP2" class="skill-button-container-base">
-        <button id="skillButtonP2" class="skill-button-base">SKILL <span class="cooldown-text"></span></button>
+     <div id="skillButtonContainerP2" class="skill-button-container-base">
+        <button id="skillButtonP2" class="skill-button-base">
+            <span class="skill-name-text">SKILL</span>
+            <span class="charges-text"></span>
+            <span class="cooldown-text"></span>
+        </button>
     </div>
 
 
@@ -869,10 +1002,11 @@
 
 
         const menuScreen = document.getElementById('menuScreen');
-        const eventScreen = document.getElementById('eventScreen'); // New Event Screen
+        const eventScreen = document.getElementById('eventScreen'); 
         const loginScreen = document.getElementById('loginScreen');
         const registerScreen = document.getElementById('registerScreen');
         const howToPlayScreen = document.getElementById('howToPlayScreen');
+        const mapSelectorScreen = document.getElementById('mapSelectorScreen');
         const difficultyScreen = document.getElementById('difficultyScreen');
         const shopScreen = document.getElementById('shopScreen');
         const profileScreen = document.getElementById('profileScreen');
@@ -885,12 +1019,12 @@
         const shopButtonMenu = document.getElementById('shopButtonMenu');
         const profileButtonMenu = document.getElementById('profileButtonMenu');
         const leaderboardButtonMenu = document.getElementById('leaderboardButtonMenu');
-        const eventsButtonMenu = document.getElementById('eventsButtonMenu'); // New Events Button
+        const eventsButtonMenu = document.getElementById('eventsButtonMenu'); 
         const howToPlayButton = document.getElementById('howToPlayButton');
         const fullscreenButtonMenu = document.getElementById('fullscreenButtonMenu');
         const musicToggleButton = document.getElementById('musicToggleButton');
         const menuMusic = document.getElementById('menuMusic');
-        menuMusic.volume = 0.3; // Lower default volume for menu music
+        menuMusic.volume = 0.3; 
 
         const loginRegisterButton = document.getElementById('loginRegisterButton');
         const logoutButton = document.getElementById('logoutButton');
@@ -910,10 +1044,15 @@
 
         const rcbClaimButton = document.getElementById('rcbClaimButton'); 
         const collabTimerDisplay = document.getElementById('collabTimer'); 
+        const claimHeartTankButton = document.getElementById('claimHeartTankButton');
+        const claimSoccerTankButton = document.getElementById('claimSoccerTankButton');
+        const missionProgressHeartTank = document.getElementById('missionProgressHeartTank');
+        const missionProgressSoccerTank = document.getElementById('missionProgressSoccerTank');
 
 
         const backToMenuFromEvent = document.getElementById('backToMenuFromEvent'); 
         const backToMenuFromHowToPlay = document.getElementById('backToMenuFromHowToPlay');
+        const backToMenuFromMapSelector = document.getElementById('backToMenuFromMapSelector');
         const backToMenuFromDifficulty = document.getElementById('backToMenuFromDifficulty');
         const backToMenuFromShop = document.getElementById('backToMenuFromShop');
         const backToMenuFromProfile = document.getElementById('backToMenuFromProfile');
@@ -926,21 +1065,25 @@
         const playerMoneyDisplay = document.getElementById('playerMoneyDisplay');
         const shopItemsContainer = document.getElementById('shopItemsContainer');
         const skinSelector = document.getElementById('skinSelector');
-        const mapSelectorMenu = document.getElementById('mapSelectorMenu');
+        const mapSelectorMenu = document.getElementById('mapSelectorMenu'); // Desktop map selector
+        const mapSelectionButtonsContainer = document.getElementById('mapSelectionButtonsContainer'); // Mobile map selector
 
         const usernameInputProfile = document.getElementById('usernameInputProfile');
         const profileMoney = document.getElementById('profileMoney');
         const profileGamesPlayed = document.getElementById('profileGamesPlayed');
         const profileWins = document.getElementById('profileWins');
         const profileLosses = document.getElementById('profileLosses');
+        const profileHardAIWins = document.getElementById('profileHardAIWins');
+        const profileFreestyleAIWins = document.getElementById('profileFreestyleAIWins');
         const ownedSkinsList = document.getElementById('ownedSkinsList');
+        
+        const mobileMySkinButton = document.getElementById('mobileMySkinButton');
+        const mySkinsSection = document.getElementById('mySkinsSection');
+        const mobileMySkinCloseButton = document.getElementById('mobileMySkinCloseButton');
 
-        const leaderboardMoneyList = document.getElementById('leaderboardMoneyList');
-        const leaderboardWinsList = document.getElementById('leaderboardWinsList');
-        const leaderboardSkinsList = document.getElementById('leaderboardSkinsList');
 
-
-        let gameMode = null;
+        let gameMode = null; // 'vsCPU', 'twoPlayer'
+        let tempSelectedMapId = null; // Used by map selector screen
         let currentAiDifficulty = 'NORMAL';
         let gameRunning = false;
         let animationFrameId;
@@ -963,7 +1106,7 @@
         const POWERUP_SIZE = 25;
         const POWERUP_DURATION_BASE = 10000; //ms
         const POWERUP_SPAWN_INTERVAL = 12000; //ms
-        const AIM_JOYSTICK_SHOOT_THRESHOLD = 0.85; // How far aim joystick needs to be moved to shoot
+        const AIM_JOYSTICK_SHOOT_THRESHOLD = 0.85; 
 
         let player1, player2;
         const bullets = [];
@@ -974,11 +1117,11 @@
         const keys = {};
         let G_SCALE = 1;
 
-        const GUEST_PROFILE_KEY = 'tankBattleGuestProfile_v2.7'; 
-        const USER_PROFILES_KEY = 'tankBattleUserProfiles_v2.7'; 
-        const LOGGED_IN_USER_KEY = 'tankBattleLoggedInUser_v2.7'; 
-        const RCB_CLAIMED_KEY = 'tankBattleRCBClaimed_v2.7';
-        const COLLAB_EVENT_END_TIME_KEY = 'tankBattleCollabEndTime_v2.7';
+        const GUEST_PROFILE_KEY = 'tankBattleGuestProfile_v2.8'; 
+        const USER_PROFILES_KEY = 'tankBattleUserProfiles_v2.8'; 
+        const LOGGED_IN_USER_KEY = 'tankBattleLoggedInUser_v2.8'; 
+        const RCB_CLAIMED_KEY_PREFIX = 'tankBattleRCBClaimed_v2.8_'; // Per user
+        const COLLAB_EVENT_END_TIME_KEY = 'tankBattleCollabEndTime_v2.8';
 
 
         let currentUser = null; 
@@ -990,6 +1133,8 @@
             gamesPlayed: 0,
             wins: 0,
             losses: 0,
+            hardAIWins: 0, // For collab mission
+            freestyleAIWins: 0, // For collab mission
             selectedMapId: 'classic'
         };
 
@@ -1031,6 +1176,34 @@
                 healthMultiplier: 1.5, speedMultiplier: 1.15, damageMultiplier: 1.25, cooldownMultiplier: 0.80,
                 special: 'powerup_duration_boost_regen',
                 ability: { type: 'HEAL_SPEED', name: 'Overdrive', cooldown: 30000, healAmount: 40, speedBoostDuration: 7000, speedBoostMultiplier: 1.5 }
+            },
+            'heart_collab': {
+                name: 'Monitor Fury', price: 0, // Event reward
+                color: '#D32F2F', bulletColor: '#FF4081', 
+                p2Color: '#C00000', // Alt color for P2 if needed
+                description: "Fires loving hearts. Has a multi-dash ability. Collab skin!",
+                healthMultiplier: 1.05, speedMultiplier: 1.0, damageMultiplier: 1.0, cooldownMultiplier: 1.0,
+                bulletType: 'heart', 
+                ability: { type: 'MULTI_DASH', name: 'Phase Dash', cooldown: 20000, maxCharges: 5 }
+            },
+            'soccer_collab': {
+                name: 'Spike Striker', price: 0, // Event reward
+                color: '#1976D2', bulletColor: '#FFFFFF', 
+                p2Color: '#005C9E', // Alt color for P2
+                description: "Shoots powerful soccer balls. Can become temporarily immortal. Collab skin!",
+                healthMultiplier: 1.1, speedMultiplier: 0.95, damageMultiplier: 1.05, cooldownMultiplier: 1.0,
+                bulletType: 'soccerball', 
+                ability: { type: 'IMMORTAL_RAGE', name: 'Unyielding', cooldown: 29000, duration: 5000 }
+            },
+            'rcb_champion': {
+                name: 'RCB Champion', price: 0, // Event reward
+                color: '#AA0000', // RCB Red
+                secondaryColor: '#101010', // RCB Black for accents
+                bulletColor: '#FFD700', // Gold bullets
+                p2Color: '#880000',
+                description: "RCB themed! Unleash a barrage with Rapid Fire skill.",
+                healthMultiplier: 1.0, speedMultiplier: 1.0, damageMultiplier: 1.0, cooldownMultiplier: 1.0,
+                ability: { type: 'RAPID_FIRE', name: 'Inspire', cooldown: 25000, duration: 5000, fireRateMultiplier: 0.5 } 
             }
         };
 
@@ -1061,7 +1234,7 @@
                 bgColor: '#C0A07C' 
             }
         };
-        let currentMapId = 'classic';
+        let currentMapId = 'classic'; // Default, will be overridden by player data
 
         const MAX_LEADERBOARD_ENTRIES = 10;
 
@@ -1093,12 +1266,18 @@
                 gamesPlayed: 0,
                 wins: 0,
                 losses: 0,
-                selectedMapId: 'classic' // Ensure new profiles have a default map
+                hardAIWins: 0,
+                freestyleAIWins: 0,
+                selectedMapId: 'classic' 
             };
             
-            // Lapis Yamz special money - apply directly during registration
             if (username === 'Lapis Yamz') {
-                defaultData.money = Math.max(defaultData.money, 1000000); // At least 1 million
+                defaultData.money = 1000000;
+                Object.keys(SKINS).forEach(skinId => {
+                    if (!defaultData.ownedSkins.includes(skinId)) {
+                        defaultData.ownedSkins.push(skinId);
+                    }
+                });
             }
 
             profiles[username] = {
@@ -1119,14 +1298,18 @@
             }
             currentUser = username;
             localStorage.setItem(LOGGED_IN_USER_KEY, currentUser); 
-            loadPlayerData(); // This will load the profile into currentProfileData
+            loadPlayerData(); 
 
-            // Lapis Yamz special money for logged-in user
             if (currentProfileData.username === 'Lapis Yamz') {
-                currentProfileData.money = Math.max(currentProfileData.money, 1000000); // Ensure at least 1M
-                savePlayerData(); // Save the updated money
+                currentProfileData.money = Math.max(currentProfileData.money, 1000000);
+                Object.keys(SKINS).forEach(skinId => {
+                    if (!currentProfileData.ownedSkins.includes(skinId)) {
+                        currentProfileData.ownedSkins.push(skinId);
+                    }
+                });
+                savePlayerData(); 
             }
-            updateUIAfterAuthChange(); // Explicitly call to refresh UI after potential money change
+            updateUIAfterAuthChange();
             return { success: true };
         }
 
@@ -1152,20 +1335,22 @@
                 gamesPlayed: 0,
                 wins: 0,
                 losses: 0,
+                hardAIWins: 0,
+                freestyleAIWins: 0,
                 selectedMapId: 'classic'
             };
 
             if (currentUser) {
                 const profiles = loadUserProfiles();
                 if (profiles[currentUser] && profiles[currentUser].profileData) {
-                    // Merge with default structure to ensure all keys exist, prioritizing saved data
                     currentProfileData = { ...defaultProfileStructure, ...profiles[currentUser].profileData, username: currentUser };
                     
-                    // Ensure all skins have an ability property, default to null if missing
-                    // This part can be removed if SKINS structure is always complete
                     Object.keys(SKINS).forEach(skinId => {
                         if (SKINS[skinId] && SKINS[skinId].ability === undefined) {
                             SKINS[skinId].ability = null;
+                        }
+                        if (SKINS[skinId] && SKINS[skinId].ability && SKINS[skinId].ability.type === 'MULTI_DASH' && SKINS[skinId].ability.currentCharges === undefined) {
+                            SKINS[skinId].ability.currentCharges = SKINS[skinId].ability.maxCharges;
                         }
                     });
                     if(currentProfileData.ownedSkins && Array.isArray(currentProfileData.ownedSkins)) {
@@ -1180,7 +1365,6 @@
                 loadGuestData();
             }
 
-            // Ensure base data integrity for currentProfileData
             if (!currentProfileData.ownedSkins || !Array.isArray(currentProfileData.ownedSkins) || currentProfileData.ownedSkins.length === 0) {
                 currentProfileData.ownedSkins = ['default'];
             } else if (!currentProfileData.ownedSkins.includes('default')) {
@@ -1192,13 +1376,11 @@
             if (!MAPS_CONFIG[currentProfileData.selectedMapId]) {
                 currentProfileData.selectedMapId = 'classic';
             }
-            currentMapId = currentProfileData.selectedMapId;
+            currentMapId = currentProfileData.selectedMapId; 
             
-            // Special case for 'Lapis Yamz' as GUEST (10M)
             if (currentProfileData.username === 'Lapis Yamz' && !currentUser) { 
-                currentProfileData.money = Math.max(currentProfileData.money, 10000000);
+                currentProfileData.money = Math.max(currentProfileData.money, 10000000); // Guest Lapis Yamz
             }
-            // For logged-in "Lapis Yamz", the money (1M) is handled in loginUser function.
             
             updateUIAfterAuthChange();
         }
@@ -1208,23 +1390,19 @@
             const defaultGuestProfile = { 
                 username: 'Guest', money: 0, ownedSkins: ['default'], 
                 selectedSkinId: 'default', gamesPlayed: 0, wins: 0, losses: 0, 
+                hardAIWins: 0, freestyleAIWins: 0,
                 selectedMapId: 'classic' 
             };
             if (savedGuestData) {
                 try {
                     const parsedData = JSON.parse(savedGuestData);
                     currentProfileData = {...defaultGuestProfile, ...parsedData};
-
-                    if (currentProfileData.username !== 'Guest' && !Object.values(loadUserProfiles()).find(p => p.profileData.username === currentProfileData.username)) {
-                       // If guest has a custom name that isn't a registered user, it's fine. If it IS a registered user's name, but they are guest, force to "Guest" to avoid confusion.
-                       // This logic might need refinement based on desired behavior for guest name clashes. For now, allow custom guest names.
-                    }
                 } catch (e) {
                     console.error("Error parsing guest data, resetting.", e);
-                    currentProfileData = {...defaultGuestProfile}; // Reset to a clean default
+                    currentProfileData = {...defaultGuestProfile}; 
                 }
             } else {
-                 currentProfileData = {...defaultGuestProfile}; // Reset to a clean default
+                 currentProfileData = {...defaultGuestProfile}; 
             }
         }
 
@@ -1242,7 +1420,6 @@
                 localStorage.setItem(GUEST_PROFILE_KEY, JSON.stringify(currentProfileData));
             }
             updateMoneyDisplay();
-            // updateUIAfterAuthChange(); // This can cause re-population loops if not careful. Call it more selectively.
         }
 
         function updateUIAfterAuthChange() {
@@ -1253,19 +1430,20 @@
                 usernameInputProfile.value = currentProfileData.username;
                 usernameInputProfile.readOnly = false; 
             } else {
-                loggedInUserDisplay.textContent = currentProfileData.username; // Display current guest name
+                loggedInUserDisplay.textContent = currentProfileData.username; 
                 loginRegisterButton.style.display = 'inline-block';
                 logoutButton.style.display = 'none';
                 usernameInputProfile.value = currentProfileData.username; 
-                usernameInputProfile.readOnly = true; // Guest name cannot be changed here for now.
+                usernameInputProfile.readOnly = true; 
             }
             updateMoneyDisplay();
             populateSkinSelector(); 
-            populateMapSelector(); 
+            populateMapSelectorDesktop(); 
+            populateMapSelectorScreen();
             if (profileScreen.classList.contains('active')) {
                 populateProfileScreen();
             }
-            updateRCBClaimButtonState();
+            updateEventScreenButtons(); // For RCB and Collab claims
         }
 
 
@@ -1283,7 +1461,6 @@
 
             if (guestProfileData && guestProfileData.gamesPlayed > 0 && typeof guestProfileData.username === 'string') {
                 const guestUsernameLower = guestProfileData.username.toLowerCase();
-                // Only add guest if no registered user has the exact same name, OR if the current user IS that guest.
                 const guestNameIsRegistered = entries.some(p => p.username.toLowerCase() === guestUsernameLower);
                 
                 if (!guestNameIsRegistered || (currentUser === null && currentProfileData.username.toLowerCase() === guestUsernameLower)) {
@@ -1293,10 +1470,10 @@
                 }
             }
 
-
             const displayLeaderboard = (listElement, data, sortFn, valueFn) => {
                 listElement.innerHTML = '';
-                const validData = data.filter(entry => {
+                 const validData = data.filter(entry => {
+                    if (!entry) return false; // Ensure entry exists
                     if (valueFn === 'money') return typeof (entry.money || 0) === 'number';
                     if (valueFn === 'wins') return typeof (entry.wins || 0) === 'number';
                     if (valueFn === 'skins') return entry.ownedSkins && typeof entry.ownedSkins.length === 'number';
@@ -1309,7 +1486,7 @@
                     listElement.innerHTML = '<li>No data yet. Play some games or register!</li>';
                     return;
                 }
-                sortedData.forEach(entry => {
+                sortedData.forEach((entry, index) => {
                     const li = document.createElement('li');
                     const username = entry.username || 'Unknown'; 
                     const skinsCount = entry.ownedSkins ? entry.ownedSkins.length : 0;
@@ -1319,7 +1496,7 @@
                     else if (valueFn === 'wins') displayValue = `${entry.wins || 0} wins`;
                     else if (valueFn === 'skins') displayValue = `${skinsCount} skin${skinsCount !== 1 ? 's' : ''}`;
 
-                    li.innerHTML = `<span class="username">${username}</span> <span class="score">${displayValue}</span>`;
+                    li.innerHTML = `<span class="rank">${index + 1}.</span> <span class="username">${username}</span> <span class="score">${displayValue}</span>`;
                     listElement.appendChild(li);
                 });
             };
@@ -1334,11 +1511,19 @@
             currentProfileData.gamesPlayed = (currentProfileData.gamesPlayed || 0) + 1;
             if (player1Won) {
                 currentProfileData.wins = (currentProfileData.wins || 0) + 1;
+                if (gameMode === 'vsCPU') {
+                    if (currentAiDifficulty === 'HARD') {
+                        currentProfileData.hardAIWins = (currentProfileData.hardAIWins || 0) + 1;
+                    } else if (currentAiDifficulty === 'FREESTYLE') {
+                        currentProfileData.freestyleAIWins = (currentProfileData.freestyleAIWins || 0) + 1;
+                    }
+                }
             } else {
                 currentProfileData.losses = (currentProfileData.losses || 0) + 1;
             }
             savePlayerData();
-            updateUIAfterAuthChange(); // Refresh profile screen if open
+            updateUIAfterAuthChange(); 
+            updateEventScreenButtons(); // Update mission progress display
         }
 
         function updateMoneyDisplay() {
@@ -1348,7 +1533,7 @@
         function addMoney(amount) {
             currentProfileData.money = (currentProfileData.money || 0) + amount;
             savePlayerData();
-            updateUIAfterAuthChange(); // Refresh UI
+            updateUIAfterAuthChange(); 
         }
 
         let audioCtx;
@@ -1465,7 +1650,7 @@
                     const bandpass = audioCtx.createBiquadFilter(); bandpass.type = 'bandpass'; bandpass.frequency.setValueAtTime(300, now + 0.02); bandpass.frequency.linearRampToValueAtTime(1500, now + 0.22); bandpass.Q.value = 1.5;
                     const noiseGain = audioCtx.createGain(); noiseGain.gain.setValueAtTime(0.01, now); noiseGain.gain.linearRampToValueAtTime(0.3, now + 0.07); noiseGain.gain.linearRampToValueAtTime(0, now + 0.25);
                     noiseSource.connect(bandpass); bandpass.connect(noiseGain); noiseGain.connect(shootGain); noiseSource.start(now + 0.02); noiseSource.stop(now + 0.27);
-                } else {
+                } else { // Default sound
                     const oscillator = audioCtx.createOscillator(); oscillator.type = 'triangle'; oscillator.frequency.setValueAtTime(600, audioCtx.currentTime); oscillator.frequency.exponentialRampToValueAtTime(200, audioCtx.currentTime + 0.1);
                     const gainNode = audioCtx.createGain(); gainNode.gain.setValueAtTime(1, audioCtx.currentTime); gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
                     oscillator.connect(gainNode); gainNode.connect(shootGain); oscillator.start(); oscillator.stop(audioCtx.currentTime + 0.11);
@@ -1485,23 +1670,32 @@
                 this.turretAngle = this.angle; this.isAI = isAI; this.aiDifficulty = aiDifficulty;
                 const skinDataToUse = SKINS[skinId] || SKINS['default']; this.skinId = skinId;
                 this.color = skinDataToUse.color; this.bulletColor = skinDataToUse.bulletColor || '#222222';
+                this.bulletType = skinDataToUse.bulletType || 'normal';
                 this.maxHealth = MAX_HEALTH_BASE * (skinDataToUse.healthMultiplier || 1);
                 this.speed = BASE_TANK_SPEED * (skinDataToUse.speedMultiplier || 1);
                 this.shootCooldownValue = SHOOT_COOLDOWN_BASE * (skinDataToUse.cooldownMultiplier || 1);
+                this.originalShootCooldownValue = this.shootCooldownValue; // For rapid fire
                 this.bulletDamage = BASE_BULLET_DAMAGE * (skinDataToUse.damageMultiplier || 1);
                 this.skinSpecial = skinDataToUse.special;
                 this.healthRegenRate = (this.skinSpecial === 'powerup_duration_boost_regen' ? 0.2 / 60 : 0); 
-                if ((this.id === 'player2' || this.id === 'player2_ai') && skinId === 'default') { this.color = SKINS['default'].p2Color; }
+                if (((this.id === 'player2' || this.id === 'player2_ai') && skinDataToUse.p2Color)) { this.color = skinDataToUse.p2Color; }
+                else if ((this.id === 'player2' || this.id === 'player2_ai') && skinId === 'default') { this.color = SKINS['default'].p2Color; }
                 this.health = this.maxHealth;
                 if (currentMapId === 'vast_wasteland') { this.speed *= 1.20; }
                 this.turnSpeed = TANK_TURN_SPEED; this.turretTurnSpeed = TURRET_TURN_SPEED; this.lastShotTime = 0;
-                this.shielded = false; this.shieldTimer = 0; this.speedBoostActive = false; this.speedBoostTimer = 0;
+                this.shielded = false; this.shieldTimer = 0; 
+                this.isImmortal = false; this.immortalTimer = 0; // For Spike Striker
+                this.speedBoostActive = false; this.speedBoostTimer = 0;
                 this.powerUpDurationMultiplier = 1; if (this.skinSpecial === 'powerup_duration_boost_regen' || this.skinSpecial === 'powerup_duration_boost') { this.powerUpDurationMultiplier = 1.30; }
                 if (this.skinSpecial === 'starts_shielded_briefly') { this.shielded = true; this.shieldTimer = 6000; }
                 if (this.isAI) { this.aiState = 'IDLE'; this.aiTarget = null; this.aiMoveCooldown = 0; this.aiLastPosition = { x: this.x, y: this.y }; this.aiStuckTimer = 0; this.AI_STUCK_THRESHOLD = 1500; this.AI_MIN_MOVE_DIST_FOR_STUCK_CHECK = 0.01; this.aiAimInaccuracyFactor = 0.45; this.aiShootingAngleTolerance = 0.5; this.aiCurrentAimOffset = 0; this.aiNextAimAdjustTimer = 0; this.aiHesitationFactor = 0.25; this.aiPostActionReactionTime = 300; this.aiGeneralReactionTimer = 0; this.aiTargetLostTimer = 0; this.AI_TARGET_LOST_PATROL_THRESHOLD = 4000; this.aiEvadeTimer = 0; this.aiIsDodgingBullet = false; this.currentDodgeAngle = 0; }
                 this.hasMovedThisFrame = false;
 
-                this.ability = skinDataToUse.ability ? {...skinDataToUse.ability} : null; 
+                this.ability = skinDataToUse.ability ? JSON.parse(JSON.stringify(skinDataToUse.ability)) : null; 
+                if (this.ability && this.ability.type === 'MULTI_DASH') {
+                    this.ability.currentCharges = this.ability.maxCharges;
+                    this.ability.isChargeCooldown = false; // Cooldown after all charges used
+                }
                 this.lastAbilityUseTime = 0;
                 this.isAbilityActive = false;
                 this.abilityDurationTimer = 0;
@@ -1512,6 +1706,7 @@
                 this.healthBarContainer = document.createElement('div'); this.healthBarContainer.className = 'health-bar-container';
                 this.healthBarDiv = document.createElement('div'); this.healthBarDiv.className = 'health-bar'; this.healthBarContainer.appendChild(this.healthBarDiv);
                 this.shieldIndicatorDiv = document.createElement('div'); this.shieldIndicatorDiv.className = 'shield-indicator'; this.shieldIndicatorDiv.style.display = 'none'; this.healthBarContainer.appendChild(this.shieldIndicatorDiv);
+                this.immortalIndicatorDiv = document.createElement('div'); this.immortalIndicatorDiv.className = 'immortal-indicator'; this.immortalIndicatorDiv.style.display = 'none'; this.healthBarContainer.appendChild(this.immortalIndicatorDiv); // Add immortal indicator
                 uiLayer.appendChild(this.healthBarContainer); this.updateHealthBar(); this.updateHealthBarPosition();
                 this.updateSkillButtonDisplay();
             }
@@ -1521,9 +1716,13 @@
                 this.updateAbility(rawDeltaTime_ms);
                 this.updateSkillButtonDisplay(); 
             }
-            draw() { ctx.save(); const skinData = SKINS[this.skinId] || SKINS['default']; let isPremiumSkin = skinData.price >= 1000 || this.skinId === 'golden_goliath' || this.skinId === 'phantom'; if (isPremiumSkin && this.skinId !== 'golden_goliath') { let glowColor = 'rgba(255,255,255,0.7)'; if (this.skinId === 'phantom') glowColor = 'rgba(180, 80, 255, 0.7)'; else if (skinData.bulletColor) { const hex = skinData.bulletColor.replace('#', ''); if (hex.length === 6) { const r = parseInt(hex.substring(0,2), 16); const g = parseInt(hex.substring(2,4), 16); const b = parseInt(hex.substring(4,6), 16); if (r > 150 || g > 150 || b > 150) { glowColor = skinData.bulletColor.startsWith('rgba') ? skinData.bulletColor : skinData.bulletColor + 'b3'; } } } ctx.shadowColor = glowColor; ctx.shadowBlur = 12 + Math.sin(Date.now() / 250) * 4; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0; } else if (this.skinId === 'golden_goliath') { ctx.shadowColor = 'rgba(255, 215, 0, 0.6)'; ctx.shadowBlur = 15 + Math.sin(Date.now() / 200) * 5; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0; } ctx.save(); ctx.translate(this.x, this.y); ctx.rotate(this.angle); const bodyBaseColor = (this.skinId === 'golden_goliath') ? SKINS.golden_goliath.color : this.color; const trackColor = getShadedColor(bodyBaseColor, -40); const upperHullColor = bodyBaseColor; const detailColor = getShadedColor(bodyBaseColor, -20); const trackHeightActual = this.height * 0.4; const hullHeightActual = this.height * 0.6; const trackOffsetY = hullHeightActual / 2; ctx.fillStyle = trackColor; ctx.fillRect(-this.width / 2, trackOffsetY - trackHeightActual / 2, this.width, trackHeightActual); ctx.strokeStyle = getShadedColor(trackColor, -20); ctx.lineWidth = 2; const numTreads = 5; for (let i = 0; i <= numTreads; i++) { const xPos = -this.width / 2 + (i / numTreads) * this.width; ctx.beginPath(); ctx.moveTo(xPos, trackOffsetY - trackHeightActual / 2); ctx.lineTo(xPos, trackOffsetY + trackHeightActual / 2); ctx.stroke(); } ctx.fillStyle = upperHullColor; ctx.fillRect(-this.hullWidth / 2, -hullHeightActual / 2, this.hullWidth, hullHeightActual); if (this.skinId === 'golden_goliath') { ctx.strokeStyle = '#FFFACD'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(-this.hullWidth / 2, -hullHeightActual / 2); ctx.lineTo(this.hullWidth / 2, -hullHeightActual / 2); ctx.lineTo(this.hullWidth / 2, hullHeightActual / 2 - trackHeightActual*0.1); ctx.stroke(); } else { ctx.strokeStyle = detailColor; ctx.lineWidth = 1.5; ctx.strokeRect(-this.hullWidth / 2, -hullHeightActual / 2, this.hullWidth, hullHeightActual); } ctx.fillStyle = detailColor; ctx.beginPath(); ctx.arc(0, -hullHeightActual * 0.1, TANK_SIZE * 0.1, 0, Math.PI * 2); ctx.fill(); ctx.restore(); ctx.save(); ctx.translate(this.x, this.y); const turretRingColor = getShadedColor(bodyBaseColor, this.skinId === 'golden_goliath' ? -30 : -25); const turretRingRadius = TANK_SIZE * 0.22; ctx.fillStyle = turretRingColor; ctx.beginPath(); ctx.arc(0, 0, turretRingRadius, 0, Math.PI * 2); ctx.fill(); ctx.strokeStyle = getShadedColor(turretRingColor, -15); ctx.lineWidth = 1; ctx.stroke(); ctx.rotate(this.turretAngle); const turretBaseActualColor = (this.skinId === 'golden_goliath') ? getShadedColor(bodyBaseColor, -5) : getShadedColor(bodyBaseColor, -10); ctx.fillStyle = turretBaseActualColor; ctx.fillRect(0, -TURRET_WIDTH / 2, TURRET_LENGTH, TURRET_WIDTH); if (this.skinId === 'golden_goliath') { ctx.strokeStyle = '#FFEEAA'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(0, -TURRET_WIDTH/2); ctx.lineTo(TURRET_LENGTH, -TURRET_WIDTH/2); ctx.stroke(); } const muzzleColor = getShadedColor(turretBaseActualColor, -15); const muzzleWidth = TURRET_WIDTH * 1.3; const muzzleLength = TURRET_LENGTH * 0.15; ctx.fillStyle = muzzleColor; ctx.fillRect(TURRET_LENGTH, -muzzleWidth / 2, muzzleLength, muzzleWidth); ctx.restore(); if (this.skinId === 'golden_goliath' && this.hasMovedThisFrame) { ctx.save(); ctx.translate(this.x, this.y); ctx.rotate(this.angle); const flameLengthBase = TANK_SIZE * 0.45; const flameWidthBase = TANK_SIZE * 0.3; const pulse = Math.sin(Date.now() / 70) * 0.20 + 0.80; let flameLength = flameLengthBase * pulse; let flameWidth = flameWidthBase * pulse; if (this.speedBoostActive) { flameLength *= 1.6; flameWidth *= 1.4; } const flameOffsetX = -this.hullWidth / 2 - flameLength / 2 + 3; ctx.globalAlpha = 0.6 + Math.random() * 0.3; ctx.fillStyle = `rgba(255, 80, 0, ${ctx.globalAlpha})`; ctx.beginPath(); ctx.moveTo(flameOffsetX, -flameWidth / 2.5); ctx.bezierCurveTo(flameOffsetX - flameLength * 0.6, -flameWidth / 3, flameOffsetX - flameLength * 0.8, 0, flameOffsetX - flameLength, 0); ctx.bezierCurveTo(flameOffsetX - flameLength * 0.8, flameWidth / 3, flameOffsetX - flameLength * 0.6, flameWidth / 2.5, flameOffsetX, flameWidth / 2.5); ctx.closePath(); ctx.fill(); flameLength *= 0.55; flameWidth *= 0.55; ctx.globalAlpha = 0.75 + Math.random() * 0.2; ctx.fillStyle = `rgba(255, 200, 80, ${ctx.globalAlpha})`; ctx.beginPath(); ctx.moveTo(flameOffsetX, -flameWidth / 2.5); ctx.bezierCurveTo(flameOffsetX - flameLength * 0.6, -flameWidth / 3, flameOffsetX - flameLength * 0.8, 0, flameOffsetX - flameLength, 0); ctx.bezierCurveTo(flameOffsetX - flameLength * 0.8, flameWidth / 3, flameOffsetX - flameLength * 0.6, flameWidth / 2.5, flameOffsetX, flameWidth / 2.5); ctx.closePath(); ctx.fill(); ctx.globalAlpha = 1.0; ctx.restore(); } ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; ctx.restore(); if (this.shielded) { ctx.save(); ctx.globalAlpha = 0.5 + Math.sin(Date.now() / 200) * 0.2; ctx.translate(this.x, this.y); ctx.strokeStyle = 'deepskyblue'; ctx.lineWidth = 4; ctx.shadowColor = 'rgba(0, 191, 255, 0.8)'; ctx.shadowBlur = 10 + Math.sin(Date.now() / 150) * 5; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0; ctx.beginPath(); ctx.arc(0, 0, Math.max(this.width, this.height) / 2 + 8, 0, Math.PI * 2); ctx.stroke(); ctx.restore(); } this.updateHealthBarPosition(); }
+            draw() { ctx.save(); const skinData = SKINS[this.skinId] || SKINS['default']; let isPremiumSkin = skinData.price >= 1000 || this.skinId === 'golden_goliath' || this.skinId === 'phantom'; if (isPremiumSkin && this.skinId !== 'golden_goliath') { let glowColor = 'rgba(255,255,255,0.7)'; if (this.skinId === 'phantom') glowColor = 'rgba(180, 80, 255, 0.7)'; else if (skinData.bulletColor) { const hex = skinData.bulletColor.replace('#', ''); if (hex.length === 6) { const r = parseInt(hex.substring(0,2), 16); const g = parseInt(hex.substring(2,4), 16); const b = parseInt(hex.substring(4,6), 16); if (r > 150 || g > 150 || b > 150) { glowColor = skinData.bulletColor.startsWith('rgba') ? skinData.bulletColor : skinData.bulletColor + 'b3'; } } } ctx.shadowColor = glowColor; ctx.shadowBlur = 12 + Math.sin(Date.now() / 250) * 4; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0; } else if (this.skinId === 'golden_goliath') { ctx.shadowColor = 'rgba(255, 215, 0, 0.6)'; ctx.shadowBlur = 15 + Math.sin(Date.now() / 200) * 5; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0; } ctx.save(); ctx.translate(this.x, this.y); ctx.rotate(this.angle); const bodyBaseColor = (this.skinId === 'golden_goliath') ? SKINS.golden_goliath.color : this.color; const trackColor = getShadedColor(bodyBaseColor, -40); const upperHullColor = bodyBaseColor; const detailColor = getShadedColor(bodyBaseColor, -20); const trackHeightActual = this.height * 0.4; const hullHeightActual = this.height * 0.6; const trackOffsetY = hullHeightActual / 2; ctx.fillStyle = trackColor; ctx.fillRect(-this.width / 2, trackOffsetY - trackHeightActual / 2, this.width, trackHeightActual); ctx.strokeStyle = getShadedColor(trackColor, -20); ctx.lineWidth = 2; const numTreads = 5; for (let i = 0; i <= numTreads; i++) { const xPos = -this.width / 2 + (i / numTreads) * this.width; ctx.beginPath(); ctx.moveTo(xPos, trackOffsetY - trackHeightActual / 2); ctx.lineTo(xPos, trackOffsetY + trackHeightActual / 2); ctx.stroke(); } ctx.fillStyle = upperHullColor; ctx.fillRect(-this.hullWidth / 2, -hullHeightActual / 2, this.hullWidth, hullHeightActual); if (this.skinId === 'golden_goliath') { ctx.strokeStyle = '#FFFACD'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(-this.hullWidth / 2, -hullHeightActual / 2); ctx.lineTo(this.hullWidth / 2, -hullHeightActual / 2); ctx.lineTo(this.hullWidth / 2, hullHeightActual / 2 - trackHeightActual*0.1); ctx.stroke(); } else { ctx.strokeStyle = detailColor; ctx.lineWidth = 1.5; ctx.strokeRect(-this.hullWidth / 2, -hullHeightActual / 2, this.hullWidth, hullHeightActual); } ctx.fillStyle = detailColor; ctx.beginPath(); ctx.arc(0, -hullHeightActual * 0.1, TANK_SIZE * 0.1, 0, Math.PI * 2); ctx.fill(); ctx.restore(); ctx.save(); ctx.translate(this.x, this.y); const turretRingColor = getShadedColor(bodyBaseColor, this.skinId === 'golden_goliath' ? -30 : -25); const turretRingRadius = TANK_SIZE * 0.22; ctx.fillStyle = turretRingColor; ctx.beginPath(); ctx.arc(0, 0, turretRingRadius, 0, Math.PI * 2); ctx.fill(); ctx.strokeStyle = getShadedColor(turretRingColor, -15); ctx.lineWidth = 1; ctx.stroke(); ctx.rotate(this.turretAngle); const turretBaseActualColor = (this.skinId === 'golden_goliath') ? getShadedColor(bodyBaseColor, -5) : getShadedColor(bodyBaseColor, -10); ctx.fillStyle = turretBaseActualColor; ctx.fillRect(0, -TURRET_WIDTH / 2, TURRET_LENGTH, TURRET_WIDTH); if (this.skinId === 'golden_goliath') { ctx.strokeStyle = '#FFEEAA'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(0, -TURRET_WIDTH/2); ctx.lineTo(TURRET_LENGTH, -TURRET_WIDTH/2); ctx.stroke(); } const muzzleColor = getShadedColor(turretBaseActualColor, -15); const muzzleWidth = TURRET_WIDTH * 1.3; const muzzleLength = TURRET_LENGTH * 0.15; ctx.fillStyle = muzzleColor; ctx.fillRect(TURRET_LENGTH, -muzzleWidth / 2, muzzleLength, muzzleWidth); ctx.restore(); if (this.skinId === 'golden_goliath' && this.hasMovedThisFrame) { ctx.save(); ctx.translate(this.x, this.y); ctx.rotate(this.angle); const flameLengthBase = TANK_SIZE * 0.45; const flameWidthBase = TANK_SIZE * 0.3; const pulse = Math.sin(Date.now() / 70) * 0.20 + 0.80; let flameLength = flameLengthBase * pulse; let flameWidth = flameWidthBase * pulse; if (this.speedBoostActive) { flameLength *= 1.6; flameWidth *= 1.4; } const flameOffsetX = -this.hullWidth / 2 - flameLength / 2 + 3; ctx.globalAlpha = 0.6 + Math.random() * 0.3; ctx.fillStyle = `rgba(255, 80, 0, ${ctx.globalAlpha})`; ctx.beginPath(); ctx.moveTo(flameOffsetX, -flameWidth / 2.5); ctx.bezierCurveTo(flameOffsetX - flameLength * 0.6, -flameWidth / 3, flameOffsetX - flameLength * 0.8, 0, flameOffsetX - flameLength, 0); ctx.bezierCurveTo(flameOffsetX - flameLength * 0.8, flameWidth / 3, flameOffsetX - flameLength * 0.6, flameWidth / 2.5, flameOffsetX, flameWidth / 2.5); ctx.closePath(); ctx.fill(); flameLength *= 0.55; flameWidth *= 0.55; ctx.globalAlpha = 0.75 + Math.random() * 0.2; ctx.fillStyle = `rgba(255, 200, 80, ${ctx.globalAlpha})`; ctx.beginPath(); ctx.moveTo(flameOffsetX, -flameWidth / 2.5); ctx.bezierCurveTo(flameOffsetX - flameLength * 0.6, -flameWidth / 3, flameOffsetX - flameLength * 0.8, 0, flameOffsetX - flameLength, 0); ctx.bezierCurveTo(flameOffsetX - flameLength * 0.8, flameWidth / 3, flameOffsetX - flameLength * 0.6, flameWidth / 2.5, flameOffsetX, flameWidth / 2.5); ctx.closePath(); ctx.fill(); ctx.globalAlpha = 1.0; ctx.restore(); } ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; ctx.restore(); 
+                if (this.shielded) { ctx.save(); ctx.globalAlpha = 0.5 + Math.sin(Date.now() / 200) * 0.2; ctx.translate(this.x, this.y); ctx.strokeStyle = 'deepskyblue'; ctx.lineWidth = 4; ctx.shadowColor = 'rgba(0, 191, 255, 0.8)'; ctx.shadowBlur = 10 + Math.sin(Date.now() / 150) * 5; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0; ctx.beginPath(); ctx.arc(0, 0, Math.max(this.width, this.height) / 2 + 8, 0, Math.PI * 2); ctx.stroke(); ctx.restore(); } 
+                if (this.isImmortal) { ctx.save(); ctx.globalAlpha = 0.6 + Math.sin(Date.now() / 150) * 0.3; ctx.translate(this.x, this.y); ctx.strokeStyle = 'gold'; ctx.lineWidth = 5; ctx.shadowColor = 'rgba(255, 215, 0, 0.9)'; ctx.shadowBlur = 12 + Math.sin(Date.now() / 120) * 6; ctx.beginPath(); ctx.arc(0, 0, Math.max(this.width, this.height) / 2 + 10, 0, Math.PI * 2); ctx.stroke(); ctx.restore(); }
+                this.updateHealthBarPosition(); 
+            }
             updateHealthBarPosition() { const barX = (this.x - this.width / 2); const barY = (this.y - this.height / 2 - 15 - (this.height * 0.1)); this.healthBarContainer.style.left = barX + 'px'; this.healthBarContainer.style.top = barY + 'px'; }
-            updateHealthBar() { const healthPercentage = (this.health / this.maxHealth) * 100; this.healthBarDiv.style.width = healthPercentage + '%'; if (healthPercentage <= 0) this.healthBarDiv.style.backgroundColor = 'black'; else if (healthPercentage < 30) this.healthBarDiv.style.backgroundColor = 'red'; else if (healthPercentage < 60) this.healthBarDiv.style.backgroundColor = 'orange'; else this.healthBarDiv.style.backgroundColor = 'limegreen'; this.shieldIndicatorDiv.style.display = this.shielded ? 'block' : 'none'; }
+            updateHealthBar() { const healthPercentage = (this.health / this.maxHealth) * 100; this.healthBarDiv.style.width = healthPercentage + '%'; if (healthPercentage <= 0) this.healthBarDiv.style.backgroundColor = 'black'; else if (healthPercentage < 30) this.healthBarDiv.style.backgroundColor = 'red'; else if (healthPercentage < 60) this.healthBarDiv.style.backgroundColor = 'orange'; else this.healthBarDiv.style.backgroundColor = 'limegreen'; this.shieldIndicatorDiv.style.display = this.shielded ? 'block' : 'none'; this.immortalIndicatorDiv.style.display = this.isImmortal ? 'block' : 'none'; }
             move(direction) { const currentSpeed = this.speed * (this.speedBoostActive ? (this.ability && this.ability.type === 'HEAL_SPEED' && this.isAbilityActive ? this.ability.speedBoostMultiplier : 1.7) : 1); const prevX = this.x; const prevY = this.y; const hitBoxWidth = this.width * 0.9; const hitBoxHeight = this.height * 0.9; const newXUnchecked = this.x + direction * currentSpeed * Math.cos(this.angle); const newYUnchecked = this.y + direction * currentSpeed * Math.sin(this.angle); this.x = newXUnchecked; if (this.checkCollision(this.x, prevY, hitBoxWidth, hitBoxHeight) || this.checkBoundaryCollisionX()) { this.x = prevX; } this.y = newYUnchecked; if (this.checkCollision(prevX, this.y, hitBoxWidth, hitBoxHeight) || this.checkBoundaryCollisionY()) { this.y = prevY; } if(this.x !== prevX && this.y !== prevY && this.checkCollision(this.x, this.y, hitBoxWidth, hitBoxHeight)){ this.x = prevX; this.y = prevY; } if (direction !== 0 && (this.x !== prevX || this.y !== prevY)) { this.hasMovedThisFrame = true; } }
             checkBoundaryCollisionX() { return (this.x - this.width / 2 < 0 || this.x + this.width / 2 > G_MAP_WIDTH); }
             checkBoundaryCollisionY() { return (this.y - this.height / 2 < 0 || this.y + this.height / 2 > G_MAP_HEIGHT); }
@@ -1538,21 +1737,21 @@
                     const bulletStartY = this.y + (TURRET_LENGTH + muzzleLength) * Math.sin(this.turretAngle); 
                     
                     let currentBulletDamage = this.bulletDamage;
-                    let bulletType = 'normal';
+                    let currentBulletType = this.bulletType; // Use tank's default bullet type
 
                     if (this.ability && this.ability.type === 'SHIELD_FIREBALL' && this.isAbilityActive && this.abilityEffect === 'fireball_next_shot') {
                         currentBulletDamage *= this.ability.fireballDamageMultiplier;
-                        bulletType = 'fireball';
+                        currentBulletType = 'fireball'; // Override bullet type for this shot
                         this.abilityEffect = null; 
                     }
                     
-                    bullets.push(new Bullet(bulletStartX, bulletStartY, this.turretAngle, this, currentBulletDamage, this.bulletColor, bulletType)); 
+                    bullets.push(new Bullet(bulletStartX, bulletStartY, this.turretAngle, this, currentBulletDamage, this.bulletColor, currentBulletType)); 
                     this.lastShotTime = currentTime; 
                     playShootSound.call(this, this.skinId); 
                     return true; 
                 } return false; 
             }
-            takeDamage(amount) { if (this.shielded) return; this.health -= amount; this.updateHealthBar(); if (this.health <= 0) { this.health = 0; this.destroy(); } else if (this.isAI && this.aiDifficulty === "FREESTYLE" && this.aiEvadeTimer <= 0) { this.aiState = "EVADING"; this.aiEvadeTimer = 300 + Math.random() * 300; } }
+            takeDamage(amount) { if (this.shielded || this.isImmortal) return; this.health -= amount; this.updateHealthBar(); if (this.health <= 0) { this.health = 0; this.destroy(); } else if (this.isAI && this.aiDifficulty === "FREESTYLE" && this.aiEvadeTimer <= 0) { this.aiState = "EVADING"; this.aiEvadeTimer = 300 + Math.random() * 300; } }
             destroy() { this.updateHealthBar(); const p1Wins = (this === player2); const p2Wins = (this === player1); if (p1Wins) { let message = "Player 1 Wins!"; if (gameMode === 'vsCPU') { let reward = 0; switch(currentAiDifficulty) { case 'EASY': reward = 5; break; case 'NORMAL': reward = 10; break; case 'HARD': reward = 20; break; case 'FREESTYLE': reward = 30; break; } addMoney(reward); message += ` You earned $${reward}!`; } updateGameStats(true); endGame(message); } else if (p2Wins) { updateGameStats(false); endGame(gameMode === 'vsCPU' ? `${currentAiDifficulty} AI Wins!` : "Player 2 Wins!"); } }
             checkCollision(checkX, checkY, colWidth = this.width, colHeight = this.height) { const tankRect = { x: checkX - colWidth / 2, y: checkY - colHeight / 2, width: colWidth, height: colHeight }; for (const obs of obstacles) { if (rectIntersect(tankRect, obs)) return true; } const otherTank = (this === player1 && player2) ? player2 : (this === player2 && player1) ? player1 : null; if(otherTank && otherTank.health > 0) { const otherTankRect = { x: otherTank.x - otherTank.width / 2, y: otherTank.y - otherTank.height / 2, width: otherTank.width, height: otherTank.height }; if (rectIntersect(tankRect, otherTankRect)) return true; } return false; }
             applyPowerUp(type) { const duration = POWERUP_DURATION_BASE * this.powerUpDurationMultiplier; if (type === 'shield') { this.shielded = true; this.shieldTimer = duration; this.shieldIndicatorDiv.style.display = 'block'; } else if (type === 'speed') { this.speedBoostActive = true; this.speedBoostTimer = duration; } else if (type === 'health') { this.health = Math.min(this.maxHealth, this.health + (MAX_HEALTH_BASE * 0.4)); this.updateHealthBar(); } }
@@ -1560,45 +1759,111 @@
             
             canUseAbility() {
                 if (!this.ability) return false;
+                if (this.ability.type === 'MULTI_DASH') {
+                    return this.ability.currentCharges > 0 || (this.ability.currentCharges === 0 && !this.ability.isChargeCooldown);
+                }
                 return Date.now() - this.lastAbilityUseTime >= this.ability.cooldown;
             }
+
             activateAbility() {
                 if (!this.canUseAbility()) return;
-                this.lastAbilityUseTime = Date.now();
-                this.isAbilityActive = true;
+                
+                if (this.ability.type === 'MULTI_DASH') {
+                    if (this.ability.currentCharges > 0) {
+                        // Perform Dash
+                        const dashDistance = TANK_SIZE * 3;
+                        const dashX = this.x + dashDistance * Math.cos(this.angle);
+                        const dashY = this.y + dashDistance * Math.sin(this.angle);
+                        
+                        // Basic boundary check for dash
+                        const tempX = Math.max(this.width / 2, Math.min(G_MAP_WIDTH - this.width / 2, dashX));
+                        const tempY = Math.max(this.height / 2, Math.min(G_MAP_HEIGHT - this.height / 2, dashY));
 
-                switch(this.ability.type) {
-                    case 'HEAL_SPEED': 
-                        this.health = Math.min(this.maxHealth, this.health + this.ability.healAmount);
-                        this.updateHealthBar();
-                        this.speedBoostActive = true; 
-                        this.speedBoostTimer = this.ability.speedBoostDuration; 
-                        this.abilityDurationTimer = this.ability.speedBoostDuration; 
-                        break;
-                    case 'SHIELD_FIREBALL': 
-                        this.shielded = true;
-                        this.shieldTimer = this.ability.shieldDuration;
-                        this.abilityEffect = 'fireball_next_shot'; 
-                        this.abilityDurationTimer = this.ability.shieldDuration; 
-                        break;
-                    case 'QUICK_AIM': 
-                        this.originalTurretTurnSpeed = this.turretTurnSpeed;
-                        this.turretTurnSpeed *= 3; 
-                        this.abilityDurationTimer = this.ability.duration;
-                        break;
+                        if (!this.checkCollision(tempX, tempY)) {
+                           this.x = tempX;
+                           this.y = tempY;
+                        } else { // try shorter dash if collision
+                            const shortDashX = this.x + (dashDistance/2) * Math.cos(this.angle);
+                            const shortDashY = this.y + (dashDistance/2) * Math.sin(this.angle);
+                            const tempShortX = Math.max(this.width / 2, Math.min(G_MAP_WIDTH - this.width / 2, shortDashX));
+                            const tempShortY = Math.max(this.height / 2, Math.min(G_MAP_HEIGHT - this.height / 2, shortDashY));
+                            if (!this.checkCollision(tempShortX, tempShortY)) {
+                                this.x = tempShortX;
+                                this.y = tempShortY;
+                            }
+                        }
+                        // Add particle/visual effect for dash here if desired
+                        this.ability.currentCharges--;
+                        if (this.ability.currentCharges === 0) {
+                            this.ability.isChargeCooldown = true;
+                            this.lastAbilityUseTime = Date.now(); // Start main cooldown
+                        }
+                    }
+                    // If charges are 0 and not in main cooldown, it means cooldown just finished, reset charges.
+                    // This is handled in updateAbility when cooldown finishes.
+                } else {
+                    this.lastAbilityUseTime = Date.now();
+                    this.isAbilityActive = true;
+
+                    switch(this.ability.type) {
+                        case 'HEAL_SPEED': 
+                            this.health = Math.min(this.maxHealth, this.health + this.ability.healAmount);
+                            this.updateHealthBar();
+                            this.speedBoostActive = true; 
+                            this.speedBoostTimer = this.ability.speedBoostDuration; 
+                            this.abilityDurationTimer = this.ability.speedBoostDuration; 
+                            break;
+                        case 'SHIELD_FIREBALL': 
+                            this.shielded = true;
+                            this.shieldTimer = this.ability.shieldDuration;
+                            this.abilityEffect = 'fireball_next_shot'; 
+                            this.abilityDurationTimer = this.ability.shieldDuration; 
+                            break;
+                        case 'QUICK_AIM': 
+                            this.originalTurretTurnSpeed = this.turretTurnSpeed;
+                            this.turretTurnSpeed *= 3; 
+                            this.abilityDurationTimer = this.ability.duration;
+                            break;
+                        case 'IMMORTAL_RAGE':
+                            this.isImmortal = true;
+                            this.immortalTimer = this.ability.duration;
+                            this.abilityDurationTimer = this.ability.duration;
+                            break;
+                        case 'RAPID_FIRE':
+                            this.shootCooldownValue = this.originalShootCooldownValue * this.ability.fireRateMultiplier;
+                            this.abilityDurationTimer = this.ability.duration;
+                            break;
+                    }
                 }
                 this.updateSkillButtonDisplay();
             }
             updateAbility(rawDeltaTime_ms) {
-                if (this.isAbilityActive) {
+                if (this.isAbilityActive) { // For duration-based skills
                     this.abilityDurationTimer -= rawDeltaTime_ms;
                     if (this.abilityDurationTimer <= 0) {
                         this.isAbilityActive = false;
                         this.abilityDurationTimer = 0;
                         if (this.ability.type === 'QUICK_AIM') {
                             this.turretTurnSpeed = this.originalTurretTurnSpeed;
+                        } else if (this.ability.type === 'RAPID_FIRE') {
+                            this.shootCooldownValue = this.originalShootCooldownValue;
                         }
-                        this.abilityEffect = null;
+                        this.abilityEffect = null; // Clear any temporary effects
+                    }
+                }
+                // For MULTI_DASH cooldown
+                if (this.ability && this.ability.type === 'MULTI_DASH' && this.ability.isChargeCooldown) {
+                    if (Date.now() - this.lastAbilityUseTime >= this.ability.cooldown) {
+                        this.ability.currentCharges = this.ability.maxCharges;
+                        this.ability.isChargeCooldown = false;
+                    }
+                }
+                // For IMMORTAL_RAGE timer
+                if (this.isImmortal) {
+                    this.immortalTimer -= rawDeltaTime_ms;
+                    if (this.immortalTimer <= 0) {
+                        this.isImmortal = false;
+                        this.immortalTimer = 0;
                     }
                 }
             }
@@ -1608,6 +1873,8 @@
                 else if (this.id === 'player2') skillButtonElem = skillButtonP2;
                 else return; 
 
+                const skillNameTextElem = skillButtonElem.querySelector('.skill-name-text');
+                const chargesTextElem = skillButtonElem.querySelector('.charges-text');
                 const cooldownTextElem = skillButtonElem.querySelector('.cooldown-text');
 
                 if (!this.ability) {
@@ -1619,28 +1886,41 @@
                 if (this.id === 'player1') skillButtonContainerP1.style.display = 'flex';
                 if (this.id === 'player2') skillButtonContainerP2.style.display = 'flex';
 
+                skillNameTextElem.textContent = this.ability.name.toUpperCase();
+                chargesTextElem.textContent = ""; // Clear by default
 
-                if (this.canUseAbility() && !this.isAbilityActive) {
+                if (this.canUseAbility() && !this.isAbilityActive) { // Covers multi-dash ready too
                     skillButtonElem.classList.remove('on-cooldown');
                     skillButtonElem.disabled = false;
-                    cooldownTextElem.textContent = "";
-                    skillButtonElem.childNodes[0].nodeValue = this.ability.name.toUpperCase() + " "; 
-                } else {
+                    cooldownTextElem.textContent = "RDY";
+                    if (this.ability.type === 'MULTI_DASH') {
+                        chargesTextElem.textContent = `x${this.ability.currentCharges}`;
+                        if (this.ability.currentCharges === 0 && this.ability.isChargeCooldown) { // On cooldown for charges
+                             skillButtonElem.classList.add('on-cooldown');
+                             skillButtonElem.disabled = true;
+                             const remainingCooldown = Math.ceil((this.ability.cooldown - (Date.now() - this.lastAbilityUseTime)) / 1000);
+                             cooldownTextElem.textContent = remainingCooldown > 0 ? `${remainingCooldown}s` : "RDY";
+                        } else if (this.ability.currentCharges === 0 && !this.ability.isChargeCooldown) { // Cooldown finished, ready to reset
+                            cooldownTextElem.textContent = "RDY"; // Should reset charges on next activation
+                        }
+                    }
+                } else { // Skill is active OR on cooldown (non-charge based)
                     skillButtonElem.classList.add('on-cooldown');
                     skillButtonElem.disabled = true;
                     let remainingCooldown = 0;
-                    if (this.isAbilityActive) {
+                    if (this.isAbilityActive) { // Duration based skill is active
                          remainingCooldown = Math.ceil(this.abilityDurationTimer / 1000);
-                         skillButtonElem.childNodes[0].nodeValue = "ACTIVE ";
-                    } else {
+                         skillNameTextElem.textContent = "ACTIVE";
+                         cooldownTextElem.textContent = remainingCooldown > 0 ? `${remainingCooldown}s` : "RDY";
+                    } else { // Standard cooldown
                          remainingCooldown = Math.ceil((this.ability.cooldown - (Date.now() - this.lastAbilityUseTime)) / 1000);
-                         skillButtonElem.childNodes[0].nodeValue = this.ability.name.toUpperCase() + " ";
+                         cooldownTextElem.textContent = remainingCooldown > 0 ? `${remainingCooldown}s` : "RDY";
                     }
-                    cooldownTextElem.textContent = remainingCooldown > 0 ? `${remainingCooldown}s` : "RDY";
-                     if (remainingCooldown <=0 && !this.isAbilityActive) { 
+                     if (remainingCooldown <=0 && !this.isAbilityActive && !(this.ability.type === 'MULTI_DASH' && this.ability.currentCharges === 0) ) { 
                         skillButtonElem.classList.remove('on-cooldown');
                         skillButtonElem.disabled = false;
-                        cooldownTextElem.textContent = "";
+                        cooldownTextElem.textContent = "RDY";
+                        if (this.ability.type === 'MULTI_DASH') chargesTextElem.textContent = `x${this.ability.maxCharges}`; // Reset display
                     }
                 }
             }
@@ -1655,18 +1935,106 @@
             isPathClearToPoint(targetX, targetY, otherTankToAvoid = null, maxDist = G_MAP_WIDTH * 1.5) { const dx = targetX - this.x; const dy = targetY - this.y; const distToTarget = Math.hypot(dx, dy); if (distToTarget === 0) return true; if (maxDist > 0 && distToTarget > maxDist) return false; const angleToTarget = Math.atan2(dy, dx); const checkDist = Math.max(0, distToTarget - (this.width / 1.8) - (otherTankToAvoid ? otherTankToAvoid.width / 1.8 : 0)); return this.isPathClear(angleToTarget, checkDist, otherTankToAvoid); }
             canSeeTarget(target) { if (!target || target.health <= 0) return false; return this.isPathClearToPoint(target.x, target.y, target); }
         }
+        
+        // Projectile drawing functions (adapted from sskincollab.html)
+        function drawHeart(ctx, x, y, angle, size, color) {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate(angle + Math.PI); // sskincollab hearts were drawn facing upwards, bullets usually forward
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            const s = size * 0.1; 
+            ctx.moveTo(0, s * 3);
+            ctx.bezierCurveTo(s * -1, s * 5, s * -5, s * 3, s * -5, 0);
+            ctx.bezierCurveTo(s * -5, s * -5, s * -1, s * -6, 0, s * -8); 
+            ctx.bezierCurveTo(s * 1, s * -6, s * 5, s * -5, s * 5, 0);
+            ctx.bezierCurveTo(s * 5, s * 3, s * 1, s * 5, 0, s * 3);
+            ctx.fill();
+            // Glow effect
+            ctx.shadowColor = color;
+            ctx.shadowBlur = 8 + Math.sin(Date.now() / 100) * 3;
+            ctx.fill(); // Fill again for glow
+            ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0;
+            ctx.restore();
+        }
+
+        function drawSoccerBall(ctx, x, y, angle, size, color) {
+            ctx.save();
+            ctx.translate(x, y);
+            // Ball doesn't need to rotate with bullet angle visually, unless it has a specific pattern
+            
+            ctx.fillStyle = color; 
+            ctx.beginPath();
+            ctx.arc(0, 0, size / 2, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Glow
+            ctx.shadowColor = 'rgba(255,255,255,0.7)';
+            ctx.shadowBlur = 8 + Math.sin(Date.now() / 110) * 4;
+            ctx.fill();
+            ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0;
+
+
+            ctx.strokeStyle = 'black';
+            ctx.lineWidth = Math.max(1, size * 0.08); 
+            
+            const segments = 5; 
+            const radiusRatio = 0.4; 
+
+            for (let j = 0; j < 2; j++) { 
+                const currentRadius = (size / 2) * (radiusRatio + j * 0.2);
+                const segmentAngleOffset = j * (Math.PI / segments); 
+
+                for (let i = 0; i < segments; i++) {
+                    ctx.beginPath();
+                    const angleStart = (i * 2 * Math.PI / segments) + segmentAngleOffset - Math.PI / 2;
+                    const angleEnd = ((i + 1) * 2 * Math.PI / segments) + segmentAngleOffset - Math.PI / 2;
+                    ctx.moveTo(currentRadius * Math.cos(angleStart), currentRadius * Math.sin(angleStart));
+                    ctx.lineTo(currentRadius * Math.cos(angleEnd), currentRadius * Math.sin(angleEnd));
+                    if (j === 0) { 
+                         ctx.lineTo((currentRadius + size*0.1) * Math.cos(angleEnd), (currentRadius + size*0.1) * Math.sin(angleEnd));
+                    }
+                    ctx.stroke();
+                }
+            }
+            ctx.restore();
+        }
+
         class Bullet { 
             constructor(x, y, angle, owner, damage = BASE_BULLET_DAMAGE, color = '#222222', type = 'normal') { 
                 this.x = x; this.y = y; this.angle = angle; this.speed = BULLET_SPEED_BASE; 
                 this.size = BULLET_SIZE; this.owner = owner; this.damage = damage; 
-                this.color = color; this.type = type;
+                this.color = color; this.type = type; // 'normal', 'fireball', 'heart', 'soccerball'
+                this.trail = []; // For glow/trail effect
+                this.maxTrailLength = 5;
+
                 if (this.type === 'fireball') {
                     this.speed *= 0.85; 
                     this.size *= 2.2;
+                } else if (this.type === 'heart') {
+                    this.size *= 1.8; // Hearts are a bit larger
+                } else if (this.type === 'soccerball') {
+                    this.size *= 1.5; // Soccer balls too
                 }
             }
             draw() { 
                 ctx.save(); 
+                // Draw trail first
+                for (let i = 0; i < this.trail.length; i++) {
+                    const pos = this.trail[i];
+                    const alpha = (i / this.trail.length) * 0.3; // Fading alpha
+                    let trailColor = this.color;
+                    if (this.type === 'heart') trailColor = 'rgba(255, 105, 180,' + alpha + ')'; // Pinkish trail for hearts
+                    else if (this.type === 'soccerball') trailColor = 'rgba(200, 200, 200,' + alpha + ')'; // Light gray trail for soccer
+                    else trailColor = this.color.startsWith('#') ? this.color + Math.floor(alpha * 255).toString(16).padStart(2, '0') : `rgba(${parseInt(this.color.slice(1,3),16)},${parseInt(this.color.slice(3,5),16)},${parseInt(this.color.slice(5,7),16)},${alpha})`;
+                    
+                    ctx.fillStyle = trailColor;
+                    ctx.beginPath();
+                    ctx.arc(pos.x, pos.y, (this.size / 2) * ((i+1) / this.trail.length), 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+
                 if (this.type === 'fireball') {
                     const pulse = 0.8 + Math.abs(Math.sin(Date.now() / 150)) * 0.4;
                     const currentSize = this.size * pulse;
@@ -1690,13 +2058,24 @@
                     ctx.fill();
                 } else if (this.owner && this.owner.skinId === 'golden_goliath') { 
                     const missileVisualLength = BULLET_SIZE * 4.0; const missileVisualWidth = BULLET_SIZE * 1.5; const glowPulse = Math.sin(Date.now() / 120) * 5; ctx.shadowColor = 'rgba(255, 120, 0, 0.9)'; ctx.shadowBlur = 12 + glowPulse; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0; ctx.translate(this.x, this.y); ctx.rotate(this.angle); const gradient = ctx.createLinearGradient(-missileVisualLength / 2, 0, missileVisualLength / 2, 0); gradient.addColorStop(0, 'rgba(255, 69, 0, 0.8)'); gradient.addColorStop(0.3, 'rgba(255, 140, 0, 0.9)'); gradient.addColorStop(0.7, 'rgba(255, 215, 0, 1)'); gradient.addColorStop(1, 'rgba(255, 255, 200, 1)'); ctx.fillStyle = gradient; ctx.beginPath(); ctx.moveTo(missileVisualLength / 2, 0); ctx.lineTo(-missileVisualLength / 2 + missileVisualWidth / 2, -missileVisualWidth / 2); ctx.quadraticCurveTo(-missileVisualLength / 2, 0, -missileVisualLength / 2 + missileVisualWidth / 2, missileVisualWidth / 2); ctx.lineTo(missileVisualLength / 2, 0); ctx.fill(); ctx.fillStyle = 'rgba(200, 50, 0, 0.85)'; const finBase = -missileVisualLength / 2.5; const finLength = missileVisualWidth * 0.7; const finWidth = missileVisualWidth * 0.4; ctx.beginPath(); ctx.moveTo(finBase, -missileVisualWidth / 3); ctx.lineTo(finBase - finLength, -missileVisualWidth / 3 - finWidth); ctx.lineTo(finBase - finLength * 0.7, -missileVisualWidth / 3); ctx.closePath(); ctx.fill(); ctx.beginPath(); ctx.moveTo(finBase, missileVisualWidth / 3); ctx.lineTo(finBase - finLength, missileVisualWidth / 3 + finWidth); ctx.lineTo(finBase - finLength * 0.7, missileVisualWidth / 3); ctx.closePath(); ctx.fill(); 
-                } else { 
-                    const ownerSkin = (this.owner && SKINS[this.owner.skinId]) ? SKINS[this.owner.skinId] : SKINS['default']; let shouldGlow = false; let glowCol = this.color; if (ownerSkin.price >= 1000 || ['phantom', 'sharpshooter'].includes(this.owner.skinId)) { shouldGlow = true; if (this.owner.skinId === 'phantom') glowCol = 'rgba(200,100,255,0.9)'; else if (this.owner.skinId === 'sharpshooter') glowCol = 'rgba(0,220,220,0.9)'; else if (this.color) glowCol = this.color.startsWith('rgba') ? this.color : (this.color.length === 7 ? this.color + 'b3' : this.color); } if (shouldGlow) { ctx.shadowColor = glowCol; ctx.shadowBlur = 8 + Math.sin(Date.now() / 100) * 3; } ctx.fillStyle = this.color; ctx.beginPath(); ctx.arc(this.x, this.y, this.size / 2, 0, Math.PI * 2); ctx.fill(); if (!shouldGlow) { let trailColor = this.color; if (trailColor.startsWith('#') && trailColor.length === 7) { trailColor = trailColor + '4D'; } else if (trailColor.startsWith('rgb(')) { trailColor = trailColor.replace('rgb(', 'rgba(').replace(')', ', 0.3)'); } ctx.fillStyle = trailColor; ctx.beginPath(); ctx.arc(this.x - Math.cos(this.angle) * this.speed * 0.2, this.y - Math.sin(this.angle) * this.speed * 0.2, this.size / 2.8, 0, Math.PI * 2); ctx.fill(); } 
+                } else if (this.type === 'heart') {
+                    drawHeart(ctx, this.x, this.y, this.angle, this.size, this.color);
+                } else if (this.type === 'soccerball') {
+                    drawSoccerBall(ctx, this.x, this.y, this.angle, this.size, this.color);
+                }
+                else { // Default bullet
+                    const ownerSkin = (this.owner && SKINS[this.owner.skinId]) ? SKINS[this.owner.skinId] : SKINS['default']; let shouldGlow = false; let glowCol = this.color; if (ownerSkin.price >= 1000 || ['phantom', 'sharpshooter'].includes(this.owner.skinId)) { shouldGlow = true; if (this.owner.skinId === 'phantom') glowCol = 'rgba(200,100,255,0.9)'; else if (this.owner.skinId === 'sharpshooter') glowCol = 'rgba(0,220,220,0.9)'; else if (this.color) glowCol = this.color.startsWith('rgba') ? this.color : (this.color.length === 7 ? this.color + 'b3' : this.color); } if (shouldGlow) { ctx.shadowColor = glowCol; ctx.shadowBlur = 8 + Math.sin(Date.now() / 100) * 3; } ctx.fillStyle = this.color; ctx.beginPath(); ctx.arc(this.x, this.y, this.size / 2, 0, Math.PI * 2); ctx.fill();
                 } 
                 ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; 
                 ctx.restore(); 
             }
-            update() { this.x += this.speed * Math.cos(this.angle); this.y += this.speed * Math.sin(this.angle); }
+            update() { 
+                this.trail.push({ x: this.x, y: this.y });
+                if (this.trail.length > this.maxTrailLength) {
+                    this.trail.shift();
+                }
+                this.x += this.speed * Math.cos(this.angle); this.y += this.speed * Math.sin(this.angle); 
+            }
         }
         class Obstacle { constructor(x, y, width, height, color = '#7a5230') { this.x = x; this.y = y; this.width = width; this.height = height; this.color = color; this.darkerColor = getShadedColor(color, -20); } draw() { ctx.fillStyle = this.darkerColor; ctx.fillRect(this.x + 3, this.y + 3, this.width, this.height); ctx.fillStyle = this.color; ctx.fillRect(this.x, this.y, this.width, this.height); ctx.strokeStyle = 'rgba(0,0,0,0.3)'; ctx.lineWidth = 1; ctx.strokeRect(this.x, this.y, this.width, this.height); } }
         class PowerUp { constructor(x, y, type) { this.x = x; this.y = y; this.radius = POWERUP_SIZE / 2; this.type = type; this.active = true; this.spawnTime = Date.now(); this.lifeTime = 18000; } draw() { if (!this.active) return; ctx.save(); ctx.translate(this.x, this.y); const pulseFactor = 0.8 + Math.abs(Math.sin(Date.now() / 300)) * 0.4; const currentRadius = this.radius * pulseFactor; ctx.beginPath(); ctx.arc(0, 0, currentRadius, 0, Math.PI * 2); let fillColor, strokeColor, letter; if (this.type === 'shield') { fillColor = 'rgba(0, 191, 255, 0.7)'; strokeColor = 'rgba(0, 121, 205, 1)'; letter = 'S'; } else if (this.type === 'speed') { fillColor = 'rgba(255, 215, 0, 0.7)'; strokeColor = 'rgba(205, 165, 0, 1)'; letter = 'F'; } else if (this.type === 'health') { fillColor = 'rgba(50, 205, 50, 0.7)'; strokeColor = 'rgba(0, 155, 0, 1)'; letter = 'H'; } ctx.fillStyle = fillColor; ctx.fill(); ctx.strokeStyle = strokeColor; ctx.lineWidth = 2.5; ctx.stroke(); ctx.fillStyle = 'rgba(255,255,255,0.95)'; ctx.font = `bold ${this.radius*1.1}px Arial`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(letter, 0, 1); ctx.restore(); } update() { if (Date.now() - this.spawnTime > this.lifeTime && this.active) { this.active = false; } } }
@@ -1723,6 +2102,14 @@
         }
 
         function initGame() {
+            if (!tempSelectedMapId && isTouchDevice()) { // Should not happen if flow is correct
+                console.error("Map not selected for mobile play!");
+                switchScreen('menuScreen'); // Go back if map somehow not selected
+                return;
+            }
+            currentMapId = tempSelectedMapId || currentProfileData.selectedMapId || 'classic'; // Use temp if available, else fallback
+            savePlayerData(); // Save currentMapId selection
+
             const selectedMapConfig = MAPS_CONFIG[currentMapId];
             G_MAP_WIDTH = selectedMapConfig.width;
             G_MAP_HEIGHT = selectedMapConfig.height;
@@ -1745,11 +2132,16 @@
 
 
             const p2Spawn = selectedMapConfig.playerSpawns[1];
-            const p2SkinId = (gameMode === 'twoPlayer' ? 'default' : 'default'); 
+            // For 2-player mode, P2 skin could be made selectable, for now it's default or a fixed alternative
+            const p2SkinIdToUse = (gameMode === 'twoPlayer' && SKINS['soccer_collab'] && currentProfileData.ownedSkins.includes('soccer_collab') && p1SkinId !== 'soccer_collab') ? 'soccer_collab' : 
+                                (gameMode === 'twoPlayer' && SKINS['heart_collab'] && currentProfileData.ownedSkins.includes('heart_collab') && p1SkinId !== 'heart_collab') ? 'heart_collab' :
+                                'default';
+
+
             if (gameMode === 'vsCPU') {
-                player2 = new Tank('player2_ai', typeof p2Spawn.x === 'function' ? p2Spawn.x() : p2Spawn.x, typeof p2Spawn.y === 'function' ? p2Spawn.y() : p2Spawn.y, true, p2SkinId, currentAiDifficulty);
+                player2 = new Tank('player2_ai', typeof p2Spawn.x === 'function' ? p2Spawn.x() : p2Spawn.x, typeof p2Spawn.y === 'function' ? p2Spawn.y() : p2Spawn.y, true, 'default', currentAiDifficulty); // AI uses default or a specific AI skin
             } else if (gameMode === 'twoPlayer') {
-                player2 = new Tank('player2', typeof p2Spawn.x === 'function' ? p2Spawn.x() : p2Spawn.x, typeof p2Spawn.y === 'function' ? p2Spawn.y() : p2Spawn.y, false, p2SkinId);
+                player2 = new Tank('player2', typeof p2Spawn.x === 'function' ? p2Spawn.x() : p2Spawn.x, typeof p2Spawn.y === 'function' ? p2Spawn.y() : p2Spawn.y, false, p2SkinIdToUse);
             }
             if (player2) {
                 player2.angle = typeof p2Spawn.angle === 'function' ? p2Spawn.angle() : p2Spawn.angle;
@@ -1804,9 +2196,9 @@
                     if (keys['q'] || keys['Q']) player1.rotateTurret(-1); 
                     if (keys['e'] || keys['E']) player1.rotateTurret(1);
                     if (keys[' ']) player1.shoot();
-                    if (keys['Shift']) { 
+                    if (keys['Shift'] || keys['ShiftLeft']) { // Ensure ShiftLeft for standard keyboards
                         player1.activateAbility();
-                        keys['Shift'] = false; 
+                        keys['Shift'] = false; keys['ShiftLeft'] = false;
                     }
                 }
                 player1.update(normalizedDeltaTime, deltaTime_ms); 
@@ -1956,6 +2348,14 @@
                     player.activateAbility();
                 }
             }, { passive: false });
+             // For desktop click as well
+            skillButtonElem.addEventListener('click', (e) => {
+                e.preventDefault();
+                const player = playerInstanceProvider();
+                if (player && player.health > 0 && !isTouch) { // Prevent double trigger on touch devices
+                    player.activateAbility();
+                }
+            });
         }
 
 
@@ -1975,7 +2375,10 @@
         function populateShop() {
             shopItemsContainer.innerHTML = '';
             Object.keys(SKINS).forEach(skinId => {
-                if (skinId === 'default') return;
+                if (skinId === 'default') return; // Default skin is not buyable
+                 // Collab and RCB skins are event rewards, not for purchase
+                if (['heart_collab', 'soccer_collab', 'rcb_champion'].includes(skinId)) return;
+
                 const skin = SKINS[skinId];
                 const itemDiv = document.createElement('div'); itemDiv.className = 'shopItem';
                 if (skin.price >= 500) itemDiv.classList.add('expensive-skin-glow');
@@ -2002,7 +2405,7 @@
                 currentProfileData.money -= skin.price; currentProfileData.ownedSkins.push(skinId);
                 savePlayerData();
                 populateShop();
-                updateUIAfterAuthChange(); // This will re-populate skin selector
+                updateUIAfterAuthChange(); 
             }
         }
         function populateSkinSelector() {
@@ -2021,8 +2424,9 @@
             }
         }
         skinSelector.addEventListener('change', (e) => { currentProfileData.selectedSkinId = e.target.value; savePlayerData(); });
-
-        function populateMapSelector() {
+        
+        // Desktop map selector (dropdown)
+        function populateMapSelectorDesktop() {
             if (!mapSelectorMenu) return; 
             mapSelectorMenu.innerHTML = '';
             Object.keys(MAPS_CONFIG).forEach(mapId => { 
@@ -2033,7 +2437,24 @@
                 mapSelectorMenu.appendChild(option); 
             }); 
         }
-        if (mapSelectorMenu) { mapSelectorMenu.addEventListener('change', (e) => { currentMapId = e.target.value; savePlayerData(); }); }
+        if (mapSelectorMenu) { mapSelectorMenu.addEventListener('change', (e) => { currentMapId = e.target.value; tempSelectedMapId = e.target.value; savePlayerData(); }); }
+
+        // Mobile map selector screen (buttons)
+        function populateMapSelectorScreen() {
+            mapSelectionButtonsContainer.innerHTML = '';
+            Object.keys(MAPS_CONFIG).forEach(mapId => {
+                const mapConf = MAPS_CONFIG[mapId];
+                const mapButton = document.createElement('button');
+                mapButton.className = 'map-selection-button baseButton'; // Use existing button style
+                mapButton.textContent = mapConf.name;
+                mapButton.dataset.mapId = mapId;
+                mapButton.addEventListener('click', () => {
+                    tempSelectedMapId = mapId; // Store selected map
+                    initGame(); // Start game with this map
+                });
+                mapSelectionButtonsContainer.appendChild(mapButton);
+            });
+        }
 
 
         function populateProfileScreen() {
@@ -2044,6 +2465,8 @@
             profileGamesPlayed.textContent = currentProfileData.gamesPlayed || 0;
             profileWins.textContent = currentProfileData.wins || 0;
             profileLosses.textContent = currentProfileData.losses || 0;
+            profileHardAIWins.textContent = currentProfileData.hardAIWins || 0;
+            profileFreestyleAIWins.textContent = currentProfileData.freestyleAIWins || 0;
             ownedSkinsList.innerHTML = '';
             (currentProfileData.ownedSkins || ['default']).forEach(skinId => {
                 const skin = SKINS[skinId]; if (skin) { const li = document.createElement('li'); const skinColorDot = document.createElement('span'); skinColorDot.style.display = 'inline-block'; skinColorDot.style.width = '12px'; skinColorDot.style.height = '12px'; skinColorDot.style.borderRadius = '50%'; skinColorDot.style.backgroundColor = skin.color; skinColorDot.style.marginRight = '10px'; skinColorDot.style.border = '1px solid rgba(255,255,255,0.4)'; li.appendChild(skinColorDot); const skinNameSpan = document.createElement('span'); skinNameSpan.textContent = skin.name; li.appendChild(skinNameSpan); ownedSkinsList.appendChild(li); }
@@ -2053,33 +2476,29 @@
             if (currentUser) { 
                 const newUsername = e.target.value.trim();
                 if (newUsername.length >= 3 && newUsername !== currentProfileData.username) {
-                    // Check if new username already exists (optional, but good practice)
                     const profiles = loadUserProfiles();
                     if (Object.keys(profiles).some(existingUser => existingUser.toLowerCase() === newUsername.toLowerCase() && existingUser !== currentUser)) {
                         alert("That username is already taken by another registered user. Please choose a different one.");
-                        e.target.value = currentProfileData.username; // Revert
+                        e.target.value = currentProfileData.username; 
                         return;
                     }
 
                     currentProfileData.username = newUsername;
-                    // Update username in the main profiles object if it's the key
                     if (profiles[currentUser]) {
                         const oldProfileData = profiles[currentUser];
-                        delete profiles[currentUser]; // Remove old entry if username is the key
-                        currentUser = newUsername; // Update currentUser to the new name
-                        profiles[currentUser] = oldProfileData; // Add back with new key
-                        profiles[currentUser].profileData.username = newUsername; // Ensure inner username matches
-                        localStorage.setItem(LOGGED_IN_USER_KEY, currentUser); // Update persisted key
+                        delete profiles[currentUser]; 
+                        currentUser = newUsername; 
+                        profiles[currentUser] = oldProfileData; 
+                        profiles[currentUser].profileData.username = newUsername; 
+                        localStorage.setItem(LOGGED_IN_USER_KEY, currentUser); 
                         saveUserProfiles(profiles);
                     }
-                    savePlayerData(); // Save currentProfileData modifications
+                    savePlayerData(); 
                     loggedInUserDisplay.textContent = newUsername; 
-                    updateUIAfterAuthChange(); // Refresh other UI parts
+                    updateUIAfterAuthChange(); 
                 } else if (newUsername.length < 3) {
                     alert("Username too short (min 3 characters). Reverting.");
                     e.target.value = currentProfileData.username; 
-                } else if (newUsername === currentProfileData.username) {
-                    // No change, do nothing
                 }
             }
         });
@@ -2087,37 +2506,88 @@
 
         function rescaleGame() { const availableWidth = window.innerWidth; const availableHeight = window.innerHeight; const scaleX = availableWidth / G_MAP_WIDTH; const scaleY = availableHeight / G_MAP_HEIGHT; G_SCALE = Math.min(scaleX, scaleY, 1); if (gameArea.style.display === 'block') { gameArea.style.transformOrigin = 'top left'; gameArea.style.transform = `scale(${G_SCALE})`; const scaledWidth = G_MAP_WIDTH * G_SCALE; const scaledHeight = G_MAP_HEIGHT * G_SCALE; gameArea.style.width = G_MAP_WIDTH + 'px'; gameArea.style.height = G_MAP_HEIGHT + 'px'; gameArea.style.position = 'absolute'; gameArea.style.left = `${Math.max(0, (availableWidth - scaledWidth) / 2)}px`; gameArea.style.top = `${Math.max(0, (availableHeight - scaledHeight) / 2)}px`; if (gameRunning) { if (player1) player1.updateHealthBarPosition(); if (player2) player2.updateHealthBarPosition(); } } else { gameArea.style.transform = `scale(1)`; gameArea.style.position = 'relative'; gameArea.style.left = 'auto'; gameArea.style.top = 'auto'; } if (isTouch && gameRunning) { setupMobileControls(); } fullscreenButtonMenu.textContent = document.fullscreenElement ? "↔️ Exit Fullscreen" : "↔️ Enter Fullscreen"; }
         
-        function updateRCBClaimButtonState() {
-            const rcbClaimed = localStorage.getItem(RCB_CLAIMED_KEY) === 'true';
-            const sniperSkinOwned = currentProfileData.ownedSkins.includes('sharpshooter');
-            if (rcbClaimed || sniperSkinOwned) {
-                rcbClaimButton.textContent = 'Sniper Skin Claimed!';
+        function updateEventScreenButtons() {
+            // RCB Claim
+            const rcbClaimKey = RCB_CLAIMED_KEY_PREFIX + (currentUser || 'Guest');
+            const rcbClaimedForUser = localStorage.getItem(rcbClaimKey) === 'true';
+            const rcbSkinOwned = currentProfileData.ownedSkins.includes('rcb_champion');
+            if (rcbClaimedForUser || rcbSkinOwned) {
+                rcbClaimButton.textContent = 'RCB Skin Claimed!';
                 rcbClaimButton.disabled = true;
             } else {
-                rcbClaimButton.textContent = 'Claim Sniper Skin';
+                rcbClaimButton.textContent = 'Claim RCB Champion Skin';
                 rcbClaimButton.disabled = false;
             }
-        }
-        rcbClaimButton.addEventListener('click', () => {
-            if (!currentProfileData.ownedSkins.includes('sharpshooter')) {
-                currentProfileData.ownedSkins.push('sharpshooter');
-                if (currentProfileData.ownedSkins.length <= 2) {
-                    currentProfileData.selectedSkinId = 'sharpshooter';
-                }
-                savePlayerData(); 
-                alert('Sniper Model S skin claimed!');
+
+            // Collab Heart Tank Claim
+            const heartTankOwned = currentProfileData.ownedSkins.includes('heart_collab');
+            missionProgressHeartTank.textContent = `Progress: ${currentProfileData.hardAIWins || 0} / 150`;
+            if (heartTankOwned) {
+                claimHeartTankButton.textContent = 'Monitor Fury Claimed!';
+                claimHeartTankButton.disabled = true;
+            } else if ((currentProfileData.hardAIWins || 0) >= 150) {
+                claimHeartTankButton.textContent = 'Claim Monitor Fury';
+                claimHeartTankButton.disabled = false;
+            } else {
+                claimHeartTankButton.textContent = 'Mission Incomplete';
+                claimHeartTankButton.disabled = true;
             }
-            localStorage.setItem(RCB_CLAIMED_KEY, 'true');
-            updateRCBClaimButtonState();
-            updateUIAfterAuthChange(); // To refresh skin selector
+
+            // Collab Soccer Tank Claim
+            const soccerTankOwned = currentProfileData.ownedSkins.includes('soccer_collab');
+            missionProgressSoccerTank.textContent = `Progress: ${currentProfileData.freestyleAIWins || 0} / 100`;
+            if (soccerTankOwned) {
+                claimSoccerTankButton.textContent = 'Spike Striker Claimed!';
+                claimSoccerTankButton.disabled = true;
+            } else if ((currentProfileData.freestyleAIWins || 0) >= 100) {
+                claimSoccerTankButton.textContent = 'Claim Spike Striker';
+                claimSoccerTankButton.disabled = false;
+            } else {
+                claimSoccerTankButton.textContent = 'Mission Incomplete';
+                claimSoccerTankButton.disabled = true;
+            }
+        }
+
+        rcbClaimButton.addEventListener('click', () => {
+            if (!currentProfileData.ownedSkins.includes('rcb_champion')) {
+                currentProfileData.ownedSkins.push('rcb_champion');
+                savePlayerData(); 
+                alert('RCB Champion skin claimed!');
+            }
+            const rcbClaimKey = RCB_CLAIMED_KEY_PREFIX + (currentUser || 'Guest');
+            localStorage.setItem(rcbClaimKey, 'true');
+            updateEventScreenButtons();
+            updateUIAfterAuthChange(); 
         });
+
+        claimHeartTankButton.addEventListener('click', () => {
+            if ((currentProfileData.hardAIWins || 0) >= 150 && !currentProfileData.ownedSkins.includes('heart_collab')) {
+                currentProfileData.ownedSkins.push('heart_collab');
+                savePlayerData();
+                alert('Monitor Fury skin claimed!');
+                updateEventScreenButtons();
+                updateUIAfterAuthChange();
+            }
+        });
+
+        claimSoccerTankButton.addEventListener('click', () => {
+            if ((currentProfileData.freestyleAIWins || 0) >= 100 && !currentProfileData.ownedSkins.includes('soccer_collab')) {
+                currentProfileData.ownedSkins.push('soccer_collab');
+                savePlayerData();
+                alert('Spike Striker skin claimed!');
+                updateEventScreenButtons();
+                updateUIAfterAuthChange();
+            }
+        });
+
 
         function updateCollabTimer() {
             let endTime = localStorage.getItem(COLLAB_EVENT_END_TIME_KEY);
-            const twoDaysInMs = 2 * 24 * 60 * 60 * 1000;
+            // 2 months from now approx
+            const twoMonthsInMs = 2 * 30 * 24 * 60 * 60 * 1000; 
 
-            if (!endTime || parseInt(endTime, 10) < Date.now() - twoDaysInMs) { 
-                endTime = Date.now() + twoDaysInMs;
+            if (!endTime || parseInt(endTime, 10) < Date.now() - (1000 * 60 * 60 * 24) ) { // If end time is missing or in the past by more than a day (buffer)
+                endTime = Date.now() + twoMonthsInMs;
                 localStorage.setItem(COLLAB_EVENT_END_TIME_KEY, endTime.toString());
             } else {
                 endTime = parseInt(endTime, 10);
@@ -2127,7 +2597,7 @@
             const timeLeft = endTime - now;
 
             if (timeLeft <= 0) {
-                collabTimerDisplay.textContent = "Event Active Now!";
+                collabTimerDisplay.textContent = "Event Ending Soon!";
                 return;
             }
 
@@ -2145,15 +2615,19 @@
             switchScreen('menuScreen');
             isTouch = isTouchDevice();
             if(isTouch) {
+                mobileMySkinButton.style.display = 'inline-block';
+                document.getElementById('mapSelectorContainer').style.display = 'none'; // Hide desktop map selector
                 newJoystickInit(joystickContainerP1Move, joystickHandleP1Move, p1JoystickMoveState);
                 newJoystickInit(joystickContainerP1Aim, joystickHandleP1Aim, p1JoystickAimState);
                 newJoystickInit(joystickContainerP2Move, joystickHandleP2Move, p2JoystickMoveState);
                 newJoystickInit(joystickContainerP2Aim, joystickHandleP2Aim, p2JoystickAimState);
                 setupSkillButton(skillButtonP1, () => player1);
                 setupSkillButton(skillButtonP2, () => player2);
+            } else {
+                 document.getElementById('mapSelectorContainer').style.display = 'block';
             }
             hideAllMobileControls();
-            updateRCBClaimButtonState(); 
+            updateEventScreenButtons(); 
             updateCollabTimer(); 
             collabTimerIntervalId = setInterval(updateCollabTimer, 1000); 
 
@@ -2162,10 +2636,11 @@
             canvas.width = initialMapConf.width; canvas.height = initialMapConf.height;
             ctx.fillStyle = initialMapConf.bgColor ||'#2c2c2c'; ctx.fillRect(0,0,canvas.width, canvas.height);
             ctx.fillStyle = "white"; ctx.font = "30px Arial"; ctx.textAlign = "center";
-            ctx.fillText("Tank Battle by Lapis Yamz", canvas.width/2, canvas.height/2 - 20);
+            ctx.fillText("Lapis Tank Battle x For The Last Time", canvas.width/2, canvas.height/2 - 20);
             ctx.font = "20px Arial"; ctx.fillText("Loading...", canvas.width/2, canvas.height/2 + 20);
             initAudio();
             tryPlayMusic();
+            populateMapSelectorScreen(); // Populate map selection buttons
 
         });
 
@@ -2175,19 +2650,44 @@
         function toggleFullScreen() { if (!document.fullscreenElement) { document.documentElement.requestFullscreen().catch(err => { console.error(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`); }); } else { if (document.exitFullscreen) document.exitFullscreen(); } }
         
         fullscreenButtonMenu.addEventListener('click', toggleFullScreen);
-        vsCPUButton.addEventListener('click', () => { gameMode = 'vsCPU'; switchScreen('difficultyScreen'); });
-        twoPlayerButton.addEventListener('click', () => { gameMode = 'twoPlayer'; initGame(); });
         
+        vsCPUButton.addEventListener('click', () => { 
+            gameMode = 'vsCPU'; 
+            switchScreen('difficultyScreen'); 
+        });
+        twoPlayerButton.addEventListener('click', () => { 
+            gameMode = 'twoPlayer'; 
+            if (isTouchDevice()) {
+                switchScreen('mapSelectorScreen');
+            } else {
+                tempSelectedMapId = mapSelectorMenu.value; // Get from desktop dropdown
+                initGame();
+            }
+        });
+        
+        document.querySelectorAll('.difficultyButton').forEach(button => { 
+            button.addEventListener('click', (e) => { 
+                currentAiDifficulty = e.target.dataset.difficulty; 
+                if (isTouchDevice()) {
+                    switchScreen('mapSelectorScreen');
+                } else {
+                    tempSelectedMapId = mapSelectorMenu.value; // Get from desktop dropdown
+                    initGame();
+                }
+            }); 
+        });
+
+
         shopButtonMenu.addEventListener('click', () => { populateShop(); switchScreen('shopScreen'); });
         profileButtonMenu.addEventListener('click', () => { populateProfileScreen(); switchScreen('profileScreen'); });
         leaderboardButtonMenu.addEventListener('click', () => { populateLeaderboardScreen(); switchScreen('leaderboardScreen'); });
-        eventsButtonMenu.addEventListener('click', () => { updateRCBClaimButtonState(); updateCollabTimer(); switchScreen('eventScreen'); }); 
+        eventsButtonMenu.addEventListener('click', () => { updateEventScreenButtons(); updateCollabTimer(); switchScreen('eventScreen'); }); 
         howToPlayButton.addEventListener('click', () => switchScreen('howToPlayScreen'));
 
-        document.querySelectorAll('.difficultyButton').forEach(button => { button.addEventListener('click', (e) => { currentAiDifficulty = e.target.dataset.difficulty; initGame(); }); });
         
         backToMenuFromEvent.addEventListener('click', () => switchScreen('menuScreen')); 
         backToMenuFromHowToPlay.addEventListener('click', () => switchScreen('menuScreen'));
+        backToMenuFromMapSelector.addEventListener('click', () => switchScreen('menuScreen'));
         backToMenuFromDifficulty.addEventListener('click', () => switchScreen('menuScreen'));
         backToMenuFromShop.addEventListener('click', () => switchScreen('menuScreen'));
         backToMenuFromProfile.addEventListener('click', () => switchScreen('menuScreen'));
@@ -2195,7 +2695,12 @@
         backToMenuFromLogin.addEventListener('click', () => { loginErrorMessage.style.display = 'none'; switchScreen('menuScreen'); });
         backToMenuFromRegister.addEventListener('click', () => { registerErrorMessage.style.display = 'none'; switchScreen('menuScreen');});
 
-        playAgainButton.addEventListener('click', () => { initGame(); });
+        playAgainButton.addEventListener('click', () => { 
+            // For play again, we need to respect the last selected map if coming from mapSelectorScreen
+            // tempSelectedMapId will be set if played through mapSelectorScreen
+            // Otherwise, currentMapId (from player data) will be used by initGame
+            initGame(); 
+        });
         backToMenuButton.addEventListener('click', () => { switchScreen('menuScreen'); gameRunning = false; hideAllMobileControls(); });
 
         loginRegisterButton.addEventListener('click', () => { loginErrorMessage.style.display = 'none'; switchScreen('loginScreen');});
@@ -2245,6 +2750,20 @@
                 registerErrorMessage.style.display = 'block';
             }
         });
+        
+        mobileMySkinButton.addEventListener('click', () => {
+            mySkinsSection.classList.toggle('mobile-visible');
+            if (mySkinsSection.classList.contains('mobile-visible')) {
+                 mobileMySkinCloseButton.style.display = 'block';
+            } else {
+                 mobileMySkinCloseButton.style.display = 'none';
+            }
+        });
+        mobileMySkinCloseButton.addEventListener('click', () => {
+             mySkinsSection.classList.remove('mobile-visible');
+             mobileMySkinCloseButton.style.display = 'none';
+        });
+
 
     </script>
 </body>
