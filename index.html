@@ -138,18 +138,35 @@
         }
         .health-bar-container {
             position: absolute;
-            width: 50px; height: 8px;
+            width: 50px; 
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .health-bar-wrapper, .energy-bar-wrapper {
+            width: 100%;
+            height: 8px;
             background-color: rgba(85, 85, 85, 0.7);
             border: 1px solid #222;
             border-radius: 2px;
             box-sizing: border-box;
+            overflow: hidden;
         }
-        .health-bar {
+        .health-bar, .energy-bar {
             height: 100%;
-            background-color: limegreen;
             border-radius: 1px;
             transition: width 0.2s ease-out;
         }
+        .health-bar {
+            background-color: limegreen;
+        }
+        .energy-bar-wrapper {
+             display: none; /* Hidden by default */
+        }
+        .energy-bar {
+            background: linear-gradient(90deg, #8A2BE2, #9932CC); /* Blue-Violet to Dark Orchid */
+        }
+
         .shield-indicator, .immortal-indicator {
             position: absolute;
             width: 10px; height: 10px;
@@ -236,6 +253,11 @@
             color: #aaa;
             border-color: rgba(80,80,80,0.8);
             cursor: not-allowed;
+        }
+        .skill-button-base.energy-ready { /* [MODIFICATION] Style for when energy is full */
+            background-color: #8A2BE2; /* BlueViolet */
+            box-shadow: 0 0 15px #DA70D6, 0 0 25px #8A2BE2;
+            animation: pulseButton 1.5s infinite;
         }
         .skill-button-base .skill-name-text { display: block; font-size: 0.9em; }
         .skill-button-base .charges-text { font-size: 0.8em; color: #ffdd77; }
@@ -904,7 +926,7 @@
         });
         let currentProfileData = getDefaultProfile();
 
-
+        // [MODIFICATION] - All skin definitions updated with new abilities
         const SKINS = {
             'default': {
                 name: 'Default Mark I', price: 0, color: '#337ab7', bulletColor: '#222222',
@@ -941,24 +963,24 @@
                 name: "Niwan's Tank", price: 700,
                 color: '#1a1a1a', bulletColor: '#E0E0E0',
                 p2Color: '#2f2f2f',
-                description: "A sleek, powerful tank designed by Niwan Kafle. Its Purify skill stuns nearby enemies.",
-                ability: { type: 'AREA_STUN', name: 'Purify', cooldown: 25000, duration: 3000, range: 150 },
+                description: "Absorb hits to unleash a devastating Void Form that damages nearby enemies and heals you.",
+                ability: { type: 'ENERGY_BALL', name: 'Void Form', duration: 4000, maxEnergy: 100, damagePerSecond: 25, areaOfEffect: 150, healthConversion: 0.6 },
                 bulletType: 'petal',
                 movementEffect: 'white_trail',
                 customDraw: true
             },
             'golden_goliath': {
                 name: 'Golden Goliath', price: 1200, color: '#B8860B', bulletColor: '#FF8C00',
-                description: "The ultimate tank. Its Aegis ability creates a personal speed/heal aura and a team healing field.",
+                description: "The ultimate tank. Aegis creates a powerful team healing aura and grants self-speed.",
                 healthMultiplier: 1.5, speedMultiplier: 1.15, damageMultiplier: 1.25, cooldownMultiplier: 0.80,
                 special: 'powerup_duration_boost_regen',
-                ability: { type: 'AEGIS_FIELD', name: 'Aegis', cooldown: 35000, duration: 8000, speedBoostMultiplier: 1.4, selfHealRate: 1.5, teamHealRate: 4.0, fieldRadius: 180 }
+                ability: { type: 'AEGIS_FIELD', name: 'Aegis', cooldown: 35000, duration: 8000, speedBoostMultiplier: 1.4, selfHealRate: 1.5, teamHealRate: 8.0, fieldRadius: 180 }
             },
             'heart_collab': {
                 name: "Nathania's Tank", price: 1000,
-                color: '#D32F2F', bulletColor: '#9400D3', // Dark Purple
+                color: '#D32F2F', bulletColor: '#9400D3',
                 p2Color: '#C00000',
-                description: "Shoots loving hearts. Time-Limited Event Skin!",
+                description: "Shoots loving hearts. Its Phase Dash allows for rapid repositioning.",
                 healthMultiplier: 1.05, speedMultiplier: 1.0, damageMultiplier: 1.0, cooldownMultiplier: 1.0,
                 bulletType: 'heart',
                 ability: { type: 'MULTI_DASH', name: 'Phase Dash', cooldown: 20000, maxCharges: 5, tdmMaxCharges: 2 },
@@ -969,7 +991,7 @@
                 name: "Liam's Tank", price: 1000,
                 color: '#1976D2', bulletColor: '#FFFFFF',
                 p2Color: '#005C9E',
-                description: "Shoots soccer balls. Time-Limited Event Skin!",
+                description: "Shoots soccer balls. Its Unyielding skill makes it immortal and grants lifesteal.",
                 healthMultiplier: 1.1, speedMultiplier: 0.95, damageMultiplier: 1.05, cooldownMultiplier: 1.0,
                 bulletType: 'soccerball',
                 ability: { type: 'IMMORTAL_RAGE', name: 'Unyielding', cooldown: 29000, duration: 5000, lifestealPercentage: 0.50 },
@@ -982,9 +1004,9 @@
                 secondaryColor: '#101010',
                 bulletColor: '#FFD700',
                 p2Color: '#880000',
-                description: "RCB themed! Unleash a barrage with Rapid Fire skill.",
+                description: "RCB themed! Its Frontline Shield reflects incoming enemy projectiles.",
                 healthMultiplier: 1.0, speedMultiplier: 1.0, damageMultiplier: 1.0, cooldownMultiplier: 1.0,
-                ability: { type: 'RAPID_FIRE', name: 'Inspire', cooldown: 25000, duration: 5000, fireRateMultiplier: 0.5 }
+                ability: { type: 'REFLECT_SHIELD', name: 'Frontline Shield', cooldown: 22000, duration: 4000 }
             }
         };
 
@@ -1050,27 +1072,8 @@
 
             let newProfileData = getDefaultProfile();
             newProfileData.username = username;
-
-            const lowerUser = username.toLowerCase();
-            if (lowerUser === 'lapis yamz') {
-                newProfileData.money = 1000000;
-                Object.keys(SKINS).forEach(skinId => {
-                    if (!newProfileData.ownedSkins.includes(skinId)) {
-                        newProfileData.ownedSkins.push(skinId);
-                    }
-                });
-            } else if (lowerUser === 'niwan') {
-                newProfileData.money = 100;
-                if (!newProfileData.ownedSkins.includes('niwan_tank')) {
-                    newProfileData.ownedSkins.push('niwan_tank');
-                }
-            } else if (lowerUser === 'nathania') {
-                newProfileData.money = 100;
-                if (!newProfileData.ownedSkins.includes('heart_collab')) {
-                    newProfileData.ownedSkins.push('heart_collab');
-                }
-            }
-
+            
+            // [MODIFICATION] Removed special registration names like 'Lapis Yamz', 'Niwan', etc.
 
             profiles[username] = {
                 hashedPassword: obfuscatePassword(password),
@@ -1094,26 +1097,8 @@
             currentUser = actualUsername;
             localStorage.setItem(LOGGED_IN_USER_KEY, currentUser);
             loadPlayerData();
-
-            const lowerUser = (currentProfileData.username || '').toLowerCase();
-            if (lowerUser === 'lapis yamz') {
-                currentProfileData.money = Math.max(currentProfileData.money, 1000000);
-                Object.keys(SKINS).forEach(skinId => {
-                    if (!currentProfileData.ownedSkins.includes(skinId)) {
-                        currentProfileData.ownedSkins.push(skinId);
-                    }
-                });
-            } else if (lowerUser === 'niwan') {
-                 if (!currentProfileData.ownedSkins.includes('niwan_tank')) {
-                    currentProfileData.ownedSkins.push('niwan_tank');
-                 }
-                 currentProfileData.money = Math.max(currentProfileData.money, 100);
-            } else if (lowerUser === 'nathania') {
-                 if (!currentProfileData.ownedSkins.includes('heart_collab')) {
-                    currentProfileData.ownedSkins.push('heart_collab');
-                 }
-                 currentProfileData.money = Math.max(currentProfileData.money, 100);
-            }
+            
+            // [MODIFICATION] Removed special login names.
 
             savePlayerData();
             updateUIAfterAuthChange();
@@ -1292,63 +1277,75 @@
         document.body.addEventListener('touchstart', firstInteractionListener, { once: true });
         document.body.addEventListener('keydown', firstInteractionListener, { once: true });
 
-
+        // [MODIFICATION] Expanded sound effects for more skins
         function playShootSound(skinId = 'default') {
             if (!audioCtx || audioCtx.state === 'suspended') {
                 initAudio();
                  if (!audioCtx || audioCtx.state === 'suspended') return;
             }
             try {
+                const now = audioCtx.currentTime;
+                let osc, gain;
                 const skinData = SKINS[skinId] || SKINS['default'];
                 if (skinData.ability && skinData.ability.type === 'SHIELD_FIREBALL' && this.isAbilityActive && this.abilityEffect === 'fireball_next_shot') {
-                    const now = audioCtx.currentTime;
-                    const osc = audioCtx.createOscillator(); osc.type = 'sawtooth';
+                    osc = audioCtx.createOscillator(); osc.type = 'sawtooth';
                     osc.frequency.setValueAtTime(150, now); osc.frequency.exponentialRampToValueAtTime(50, now + 0.25);
-                    const gain = audioCtx.createGain(); gain.gain.setValueAtTime(0.7, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                    gain = audioCtx.createGain(); gain.gain.setValueAtTime(0.7, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
                     osc.connect(gain); gain.connect(shootGain); osc.start(now); osc.stop(now + 0.3);
-                    const noiseBuffer = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.3, audioCtx.sampleRate);
-                    const output = noiseBuffer.getChannelData(0);
-                    for (let i = 0; i < noiseBuffer.length; i++) { output[i] = (Math.random() * 2 - 1) * 0.5; }
-                    const noiseSource = audioCtx.createBufferSource(); noiseSource.buffer = noiseBuffer;
-                    const bandpass = audioCtx.createBiquadFilter(); bandpass.type = 'bandpass'; bandpass.frequency.setValueAtTime(600, now); bandpass.Q.value = 1;
-                    const noiseGain = audioCtx.createGain(); noiseGain.gain.setValueAtTime(0, now); noiseGain.gain.linearRampToValueAtTime(0.4, now + 0.05); noiseGain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
-                    noiseSource.connect(bandpass); bandpass.connect(noiseGain); noiseGain.connect(shootGain);
-                    noiseSource.start(now); noiseSource.stop(now + 0.3);
                 } else if (skinId === 'golden_goliath') {
-                    const now = audioCtx.currentTime;
-                    const osc1 = audioCtx.createOscillator(); osc1.type = 'sawtooth'; osc1.frequency.setValueAtTime(120, now); osc1.frequency.exponentialRampToValueAtTime(40, now + 0.15);
-                    const gain1 = audioCtx.createGain(); gain1.gain.setValueAtTime(0.6, now); gain1.gain.exponentialRampToValueAtTime(0.01, now + 0.20);
-                    osc1.connect(gain1); gain1.connect(shootGain); osc1.start(now); osc1.stop(now + 0.20);
-                    const noiseBuffer = audioCtx.createBuffer(1, Math.floor(audioCtx.sampleRate * 0.25), audioCtx.sampleRate);
-                    const output = noiseBuffer.getChannelData(0); for (let i = 0; i < noiseBuffer.length; i++) { output[i] = (Math.random() * 2 - 1) * 0.4; }
-                    const noiseSource = audioCtx.createBufferSource(); noiseSource.buffer = noiseBuffer;
-                    const bandpass = audioCtx.createBiquadFilter(); bandpass.type = 'bandpass'; bandpass.frequency.setValueAtTime(300, now + 0.02); bandpass.frequency.linearRampToValueAtTime(1500, now + 0.22); bandpass.Q.value = 1.5;
-                    const noiseGain = audioCtx.createGain(); noiseGain.gain.setValueAtTime(0.01, now); noiseGain.gain.linearRampToValueAtTime(0.5, now + 0.07); noiseGain.gain.linearRampToValueAtTime(0, now + 0.25);
-                    noiseSource.connect(bandpass); bandpass.connect(noiseGain); noiseGain.connect(shootGain); noiseSource.start(now + 0.02); noiseSource.stop(now + 0.27);
-                } else {
-                    const oscillator = audioCtx.createOscillator(); oscillator.type = 'triangle'; oscillator.frequency.setValueAtTime(600, audioCtx.currentTime); oscillator.frequency.exponentialRampToValueAtTime(200, audioCtx.currentTime + 0.1);
-                    const gainNode = audioCtx.createGain(); gainNode.gain.setValueAtTime(1, audioCtx.currentTime); gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
-                    oscillator.connect(gainNode); gainNode.connect(shootGain); oscillator.start(); oscillator.stop(audioCtx.currentTime + 0.11);
+                    osc = audioCtx.createOscillator(); osc.type = 'sawtooth'; osc.frequency.setValueAtTime(120, now); osc.frequency.exponentialRampToValueAtTime(40, now + 0.15);
+                    gain = audioCtx.createGain(); gain.gain.setValueAtTime(0.6, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.20);
+                    osc.connect(gain); gain.connect(shootGain); osc.start(now); osc.stop(now + 0.20);
+                } else if (skinId === 'bruiser') {
+                    osc = audioCtx.createOscillator(); osc.type = 'square'; osc.frequency.setValueAtTime(400, now); osc.frequency.exponentialRampToValueAtTime(100, now + 0.15);
+                    gain = audioCtx.createGain(); gain.gain.setValueAtTime(0.9, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+                    osc.connect(gain); gain.connect(shootGain); osc.start(); osc.stop(now + 0.16);
+                } else if (skinId === 'scout') {
+                    osc = audioCtx.createOscillator(); osc.type = 'triangle'; osc.frequency.setValueAtTime(900, now); osc.frequency.exponentialRampToValueAtTime(400, now + 0.08);
+                    gain = audioCtx.createGain(); gain.gain.setValueAtTime(0.8, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+                    osc.connect(gain); gain.connect(shootGain); osc.start(); osc.stop(now + 0.09);
+                }
+                else { // Default sound
+                    osc = audioCtx.createOscillator(); osc.type = 'triangle'; osc.frequency.setValueAtTime(600, now); osc.frequency.exponentialRampToValueAtTime(200, now + 0.1);
+                    gain = audioCtx.createGain(); gain.gain.setValueAtTime(1, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+                    osc.connect(gain); gain.connect(shootGain); osc.start(); osc.stop(now + 0.11);
                 }
             } catch (e) { console.warn("Error playing shoot sound:", e); }
         }
 
+        // [MODIFICATION] Added more ability sounds
         function playAbilitySound(type) {
              if (!audioCtx || audioCtx.state === 'suspended') return;
              const now = audioCtx.currentTime;
+             let osc, gain;
              if (type === 'AEGIS_FIELD') {
-                const osc = audioCtx.createOscillator(); osc.type = 'sine';
+                osc = audioCtx.createOscillator(); osc.type = 'sine';
                 osc.frequency.setValueAtTime(200, now); osc.frequency.exponentialRampToValueAtTime(800, now + 0.2);
-                const gain = audioCtx.createGain(); gain.gain.setValueAtTime(0.3, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.8);
-                osc.connect(gain).connect(audioCtx.destination);
-                osc.start(now); osc.stop(now + 0.8);
+                gain = audioCtx.createGain(); gain.gain.setValueAtTime(0.3, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.8);
+                osc.connect(gain).connect(audioCtx.destination); osc.start(now); osc.stop(now + 0.8);
              } else if (type === 'MULTI_DASH') {
-                const osc = audioCtx.createOscillator(); osc.type = 'sawtooth';
+                osc = audioCtx.createOscillator(); osc.type = 'sawtooth';
                 osc.frequency.setValueAtTime(1200, now); osc.frequency.exponentialRampToValueAtTime(300, now + 0.15);
-                const gain = audioCtx.createGain(); gain.gain.setValueAtTime(0.25, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
-                osc.connect(gain).connect(audioCtx.destination);
-                osc.start(now); osc.stop(now + 0.15);
+                gain = audioCtx.createGain(); gain.gain.setValueAtTime(0.25, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+                osc.connect(gain).connect(audioCtx.destination); osc.start(now); osc.stop(now + 0.15);
+             } else if (type === 'REFLECT_SHIELD') {
+                osc = audioCtx.createOscillator(); osc.type = 'square';
+                osc.frequency.setValueAtTime(300, now); osc.frequency.linearRampToValueAtTime(1000, now + 0.1);
+                gain = audioCtx.createGain(); gain.gain.setValueAtTime(0.4, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+                osc.connect(gain).connect(audioCtx.destination); osc.start(now); osc.stop(now + 0.4);
+             } else if (type === 'ENERGY_BALL') {
+                osc = audioCtx.createOscillator(); osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(50, now); osc.frequency.exponentialRampToValueAtTime(400, now + 0.5);
+                const distortion = audioCtx.createWaveShaper();
+                distortion.curve = makeDistortionCurve(200);
+                gain = audioCtx.createGain(); gain.gain.setValueAtTime(0.5, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 1.2);
+                osc.connect(distortion).connect(gain).connect(audioCtx.destination); osc.start(now); osc.stop(now + 1.2);
              }
+        }
+        function makeDistortionCurve(amount) {
+            let k = typeof amount === 'number' ? amount : 50, n_samples = 44100, curve = new Float32Array(n_samples), deg = Math.PI / 180, i = 0, x;
+            for ( ; i < n_samples; ++i ) { x = i * 2 / n_samples - 1; curve[i] = ( 3 + k ) * x * 20 * deg / ( Math.PI + k * Math.abs(x) ); }
+            return curve;
         }
 
         function normalizeAngle(angle) { angle = angle % (2 * Math.PI); if (angle < 0) angle += (2 * Math.PI); return angle; }
@@ -1356,8 +1353,9 @@
 
 
         class Tank {
-            constructor(id, x, y, angle, team, isAI = false, skinId = 'default', aiDifficulty = 'NORMAL') {
-                this.id = id; this.x = x; this.y = y; this.team = team; this.isAI = isAI; this.aiDifficulty = aiDifficulty;
+            // [FIX] Added isPreview flag to prevent UI element creation for previews
+            constructor(id, x, y, angle, team, isAI = false, skinId = 'default', aiDifficulty = 'NORMAL', isPreview = false) {
+                this.id = id; this.x = x; this.y = y; this.team = team; this.isAI = isAI; this.aiDifficulty = aiDifficulty; this.isPreview = isPreview;
                 const skinDataToUse = SKINS[skinId] || SKINS['default']; this.skinId = skinId;
                 
                 this.width = TANK_SIZE_BASE;
@@ -1397,14 +1395,20 @@
                 this.hasMovedThisFrame = false;
                 this.isStunned = false;
                 this.stunTimer = 0;
+                this.isEnergyBall = false; // For Niwan tank
+                this.energyBallTimer = 0;
+                this.reflectShieldRect = null; // For RCB tank
 
                 this.ability = skinDataToUse.ability ? JSON.parse(JSON.stringify(skinDataToUse.ability)) : null;
-                if (this.ability && this.ability.type === 'MULTI_DASH') {
-                    // TDM balance: reduce charges in team modes
-                    const isTeamMode = gameMode && (gameMode.startsWith('TDM') || gameMode === 'twoPlayer');
-                    this.ability.maxCharges = isTeamMode ? (this.ability.tdmMaxCharges || 2) : this.ability.maxCharges;
-                    this.ability.currentCharges = this.ability.maxCharges;
-                    this.ability.isChargeCooldown = false;
+                if (this.ability) {
+                     if (this.ability.type === 'MULTI_DASH') {
+                        const isTeamMode = gameMode && (gameMode.startsWith('TDM') || gameMode === 'twoPlayer');
+                        this.ability.maxCharges = isTeamMode ? (this.ability.tdmMaxCharges || 2) : this.ability.maxCharges;
+                        this.ability.currentCharges = this.ability.maxCharges;
+                        this.ability.isChargeCooldown = false;
+                    } else if (this.ability.type === 'ENERGY_BALL') {
+                        this.energy = 0;
+                    }
                 }
                 this.lastAbilityUseTime = 0;
                 this.isAbilityActive = false;
@@ -1412,24 +1416,55 @@
                 this.abilityEffect = null;
                 this.originalTurretTurnSpeed = this.turretTurnSpeed;
 
+                // [FIX] Only create UI elements if it's a real tank, not a preview
+                if (!this.isPreview) {
+                    this.healthBarContainer = document.createElement('div'); this.healthBarContainer.className = 'health-bar-container';
+                    
+                    const healthWrapper = document.createElement('div'); healthWrapper.className = 'health-bar-wrapper';
+                    this.healthBarDiv = document.createElement('div'); this.healthBarDiv.className = 'health-bar'; healthWrapper.appendChild(this.healthBarDiv);
+                    this.healthBarContainer.appendChild(healthWrapper);
 
-                this.healthBarContainer = document.createElement('div'); this.healthBarContainer.className = 'health-bar-container';
-                this.healthBarDiv = document.createElement('div'); this.healthBarDiv.className = 'health-bar'; this.healthBarContainer.appendChild(this.healthBarDiv);
-                this.shieldIndicatorDiv = document.createElement('div'); this.shieldIndicatorDiv.className = 'shield-indicator'; this.shieldIndicatorDiv.style.display = 'none'; this.healthBarContainer.appendChild(this.shieldIndicatorDiv);
-                this.immortalIndicatorDiv = document.createElement('div'); this.immortalIndicatorDiv.className = 'immortal-indicator'; this.immortalIndicatorDiv.style.display = 'none'; this.healthBarContainer.appendChild(this.immortalIndicatorDiv);
-                if (uiLayer) uiLayer.appendChild(this.healthBarContainer); // Safety check for loading screen
-                this.updateHealthBar(); 
-                if (uiLayer) this.updateHealthBarPosition();
-                this.updateSkillButtonDisplay();
+                    if (this.ability && this.ability.type === 'ENERGY_BALL') {
+                        this.energyBarWrapper = document.createElement('div'); this.energyBarWrapper.className = 'energy-bar-wrapper';
+                        this.energyBarDiv = document.createElement('div'); this.energyBarDiv.className = 'energy-bar'; this.energyBarWrapper.appendChild(this.energyBarDiv);
+                        this.healthBarContainer.appendChild(this.energyBarWrapper);
+                        this.updateEnergyBar();
+                    }
+
+                    this.shieldIndicatorDiv = document.createElement('div'); this.shieldIndicatorDiv.className = 'shield-indicator'; this.shieldIndicatorDiv.style.display = 'none'; this.healthBarContainer.appendChild(this.shieldIndicatorDiv);
+                    this.immortalIndicatorDiv = document.createElement('div'); this.immortalIndicatorDiv.className = 'immortal-indicator'; this.immortalIndicatorDiv.style.display = 'none'; this.healthBarContainer.appendChild(this.immortalIndicatorDiv);
+                    
+                    uiLayer.appendChild(this.healthBarContainer);
+                    this.updateHealthBar(); 
+                    this.updateHealthBarPosition();
+                    this.updateSkillButtonDisplay();
+                }
             }
             update(normalizedDeltaTime, rawDeltaTime_ms) {
+                 if (this.isEnergyBall) { // [MODIFICATION] Niwan ability logic
+                    this.energyBallTimer -= rawDeltaTime_ms;
+                    if (this.energyBallTimer <= 0) {
+                        this.isEnergyBall = false;
+                        this.isAbilityActive = false;
+                    } else {
+                        // Damage nearby enemies
+                        allTanks.forEach(tank => {
+                            if (tank !== this && tank.team !== this.team && tank.health > 0) {
+                                const dist = Math.hypot(this.x - tank.x, this.y - tank.y);
+                                if (dist < this.ability.areaOfEffect) {
+                                    tank.takeDamage(this.ability.damagePerSecond * (rawDeltaTime_ms / 1000), this.team);
+                                }
+                            }
+                        });
+                    }
+                    return; // Skip other updates while in ball form
+                }
                 if (this.isStunned) {
                     this.stunTimer -= rawDeltaTime_ms;
                     if (this.stunTimer <= 0) {
                         this.isStunned = false;
                         this.stunTimer = 0;
                     }
-                    // Prevent any action while stunned
                     return;
                 }
                 if (this.healthRegenRate > 0 && this.health < this.maxHealth) { this.health += this.healthRegenRate * normalizedDeltaTime; if (this.health > this.maxHealth) this.health = this.maxHealth; this.updateHealthBar(); }
@@ -1438,6 +1473,22 @@
                 this.updateSkillButtonDisplay();
             }
             draw() {
+                if (this.isEnergyBall) { // [MODIFICATION] Niwan ability visual
+                    ctx.save();
+                    ctx.translate(this.x, this.y);
+                    const pulse = 1 + Math.sin(Date.now() / 100) * 0.15;
+                    ctx.fillStyle = `rgba(10, 5, 20, ${0.8 + Math.sin(Date.now() / 150) * 0.1})`;
+                    ctx.strokeStyle = `rgba(138, 43, 226, ${0.7 + Math.sin(Date.now() / 200) * 0.3})`;
+                    ctx.lineWidth = 4 * pulse;
+                    ctx.shadowColor = '#8A2BE2';
+                    ctx.shadowBlur = 25;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, this.width * 0.8 * pulse, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.stroke();
+                    ctx.restore();
+                    return;
+                }
                 if (this.isStunned) {
                     ctx.save();
                     ctx.translate(this.x, this.y);
@@ -1466,12 +1517,28 @@
                     ctx.restore();
                 }
 
-
                 if (this.customDraw) {
                     this.drawCustomSkin();
                 } else {
                     this.drawStandardSkin();
                 }
+                
+                // [MODIFICATION] RCB Shield draw logic
+                if (this.skinId === 'rcb_champion' && this.isAbilityActive && this.reflectShieldRect) {
+                    ctx.save();
+                    ctx.translate(this.reflectShieldRect.x + this.reflectShieldRect.w / 2, this.reflectShieldRect.y + this.reflectShieldRect.h / 2);
+                    ctx.rotate(this.angle);
+                    const pulse = Math.sin(Date.now() / 100) * 0.05 + 1;
+                    ctx.fillStyle = `rgba(255, 215, 0, ${0.15 + Math.sin(Date.now() / 150) * 0.1})`;
+                    ctx.strokeStyle = `rgba(255, 100, 0, ${0.8 + Math.sin(Date.now() / 200) * 0.2})`;
+                    ctx.lineWidth = 5 * pulse;
+                    ctx.shadowColor = 'gold';
+                    ctx.shadowBlur = 20;
+                    ctx.strokeRect(-this.reflectShieldRect.w / 2, -this.reflectShieldRect.h / 2, this.reflectShieldRect.w, this.reflectShieldRect.h);
+                    ctx.fillRect(-this.reflectShieldRect.w / 2, -this.reflectShieldRect.h / 2, this.reflectShieldRect.w, this.reflectShieldRect.h);
+                    ctx.restore();
+                }
+
                  if (this.hasMovedThisFrame && this.movementEffect) {
                     this.drawMovementTrail();
                 }
@@ -1480,7 +1547,7 @@
                 ctx.save(); const skinData = SKINS[this.skinId] || SKINS['default']; let isPremiumSkin = skinData.price >= 1000 || this.skinId === 'golden_goliath' || this.skinId === 'phantom'; if (isPremiumSkin && this.skinId !== 'golden_goliath') { let glowColor = 'rgba(255,255,255,0.7)'; if (this.skinId === 'phantom') glowColor = 'rgba(180, 80, 255, 0.7)'; else if (skinData.bulletColor) { const hex = skinData.bulletColor.replace('#', ''); if (hex.length === 6) { const r = parseInt(hex.substring(0,2), 16); const g = parseInt(hex.substring(2,4), 16); const b = parseInt(hex.substring(4,6), 16); if (r > 150 || g > 150 || b > 150) { glowColor = skinData.bulletColor.startsWith('rgba') ? skinData.bulletColor : skinData.bulletColor + 'b3'; } } } ctx.shadowColor = glowColor; ctx.shadowBlur = 12 + Math.sin(Date.now() / 250) * 4; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0; } else if (this.skinId === 'golden_goliath') { ctx.shadowColor = 'rgba(255, 215, 0, 0.6)'; ctx.shadowBlur = 15 + Math.sin(Date.now() / 200) * 5; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0; } ctx.save(); ctx.translate(this.x, this.y); ctx.rotate(this.angle); const bodyBaseColor = (this.skinId === 'golden_goliath') ? SKINS.golden_goliath.color : this.color; const trackColor = getShadedColor(bodyBaseColor, -40); const upperHullColor = bodyBaseColor; const detailColor = getShadedColor(bodyBaseColor, -20); const trackHeightActual = this.height * 0.4; const hullHeightActual = this.height * 0.6; const trackOffsetY = hullHeightActual / 2; ctx.fillStyle = trackColor; ctx.fillRect(-this.width / 2, trackOffsetY - trackHeightActual / 2, this.width, trackHeightActual); ctx.strokeStyle = getShadedColor(trackColor, -20); ctx.lineWidth = 2; const numTreads = 5; for (let i = 0; i <= numTreads; i++) { const xPos = -this.width / 2 + (i / numTreads) * this.width; ctx.beginPath(); ctx.moveTo(xPos, trackOffsetY - trackHeightActual / 2); ctx.lineTo(xPos, trackOffsetY + trackHeightActual / 2); ctx.stroke(); } ctx.fillStyle = upperHullColor; ctx.fillRect(-this.hullWidth / 2, -hullHeightActual / 2, this.hullWidth, hullHeightActual); if (this.skinId === 'golden_goliath') { ctx.strokeStyle = '#FFFACD'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(-this.hullWidth / 2, -hullHeightActual / 2); ctx.lineTo(this.hullWidth / 2, -hullHeightActual / 2); ctx.lineTo(this.hullWidth / 2, hullHeightActual / 2 - trackHeightActual*0.1); ctx.stroke(); } else { ctx.strokeStyle = detailColor; ctx.lineWidth = 1.5; ctx.strokeRect(-this.hullWidth / 2, -hullHeightActual / 2, this.hullWidth, hullHeightActual); } ctx.fillStyle = detailColor; ctx.beginPath(); ctx.arc(0, -hullHeightActual * 0.1, TANK_SIZE * 0.1, 0, Math.PI * 2); ctx.fill(); ctx.restore(); ctx.save(); ctx.translate(this.x, this.y); const turretRingColor = getShadedColor(bodyBaseColor, this.skinId === 'golden_goliath' ? -30 : -25); const turretRingRadius = TANK_SIZE * 0.22; ctx.fillStyle = turretRingColor; ctx.beginPath(); ctx.arc(0, 0, turretRingRadius, 0, Math.PI * 2); ctx.fill(); ctx.strokeStyle = getShadedColor(turretRingColor, -15); ctx.lineWidth = 1; ctx.stroke(); ctx.rotate(this.turretAngle); const turretBaseActualColor = (this.skinId === 'golden_goliath') ? getShadedColor(bodyBaseColor, -5) : getShadedColor(bodyBaseColor, -10); ctx.fillStyle = turretBaseActualColor; ctx.fillRect(0, -TURRET_WIDTH / 2, TURRET_LENGTH, TURRET_WIDTH); if (this.skinId === 'golden_goliath') { ctx.strokeStyle = '#FFEEAA'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(0, -TURRET_WIDTH/2); ctx.lineTo(TURRET_LENGTH, -TURRET_WIDTH/2); ctx.stroke(); } const muzzleColor = getShadedColor(turretBaseActualColor, -15); const muzzleWidth = TURRET_WIDTH * 1.3; const muzzleLength = TURRET_LENGTH * 0.15; ctx.fillStyle = muzzleColor; ctx.fillRect(TURRET_LENGTH, -muzzleWidth / 2, muzzleLength, muzzleWidth); ctx.restore(); if (this.skinId === 'golden_goliath' && this.hasMovedThisFrame) { ctx.save(); ctx.translate(this.x, this.y); ctx.rotate(this.angle); const flameLengthBase = TANK_SIZE * 0.45; const flameWidthBase = TANK_SIZE * 0.3; const pulse = Math.sin(Date.now() / 70) * 0.20 + 0.80; let flameLength = flameLengthBase * pulse; let flameWidth = flameWidthBase * pulse; if (this.speedBoostActive) { flameLength *= 1.6; flameWidth *= 1.4; } const flameOffsetX = -this.hullWidth / 2 - flameLength / 2 + 3; ctx.globalAlpha = 0.6 + Math.random() * 0.3; ctx.fillStyle = `rgba(255, 80, 0, ${ctx.globalAlpha})`; ctx.beginPath(); ctx.moveTo(flameOffsetX, -flameWidth / 2.5); ctx.bezierCurveTo(flameOffsetX - flameLength * 0.6, -flameWidth / 3, flameOffsetX - flameLength * 0.8, 0, flameOffsetX - flameLength, 0); ctx.bezierCurveTo(flameOffsetX - flameLength * 0.8, flameWidth / 3, flameOffsetX - flameLength * 0.6, flameWidth / 2.5, flameOffsetX, flameWidth / 2.5); ctx.closePath(); ctx.fill(); flameLength *= 0.55; flameWidth *= 0.55; ctx.globalAlpha = 0.75 + Math.random() * 0.2; ctx.fillStyle = `rgba(255, 200, 80, ${ctx.globalAlpha})`; ctx.beginPath(); ctx.moveTo(flameOffsetX, -flameWidth / 2.5); ctx.bezierCurveTo(flameOffsetX - flameLength * 0.6, -flameWidth / 3, flameOffsetX - flameLength * 0.8, 0, flameOffsetX - flameLength, 0); ctx.bezierCurveTo(flameOffsetX - flameLength * 0.8, flameWidth / 3, flameOffsetX - flameLength * 0.6, flameWidth / 2.5, flameOffsetX, flameWidth / 2.5); ctx.closePath(); ctx.fill(); ctx.globalAlpha = 1.0; ctx.restore(); } ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; ctx.restore();
                 if (this.shielded) { ctx.save(); ctx.globalAlpha = 0.5 + Math.sin(Date.now() / 200) * 0.2; ctx.translate(this.x, this.y); ctx.strokeStyle = 'deepskyblue'; ctx.lineWidth = 4; ctx.shadowColor = 'rgba(0, 191, 255, 0.8)'; ctx.shadowBlur = 10 + Math.sin(Date.now() / 150) * 5; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0; ctx.beginPath(); ctx.arc(0, 0, Math.max(this.width, this.height) / 2 + 8, 0, Math.PI * 2); ctx.stroke(); ctx.restore(); }
                 if (this.isImmortal) { ctx.save(); ctx.globalAlpha = 0.6 + Math.sin(Date.now() / 150) * 0.3; ctx.translate(this.x, this.y); ctx.strokeStyle = 'gold'; ctx.lineWidth = 5; ctx.shadowColor = 'rgba(255, 215, 0, 0.9)'; ctx.shadowBlur = 12 + Math.sin(Date.now() / 120) * 6; ctx.beginPath(); ctx.arc(0, 0, Math.max(this.width, this.height) / 2 + 10, 0, Math.PI * 2); ctx.stroke(); ctx.restore(); }
-                if (uiLayer) this.updateHealthBarPosition();
+                if (!this.isPreview) this.updateHealthBarPosition();
             }
             drawCustomSkin() {
                 const isNathania = this.skinId === 'heart_collab';
@@ -1519,27 +1586,25 @@
                 if (isNathania) {
                     const monitorW = this.width * 0.7; 
                     const monitorH = this.height * 0.7;
-                    const barrelL = this.height * 0.6;
+                    const barrelL = this.height * 0.9; // [MODIFICATION] Increased barrel length
                     const framePadding = this.width * 0.05;
 
-                    // 1. Barrel
                     ctx.fillStyle = '#616161';
                     ctx.fillRect(0, -barrelW / 2, barrelL, barrelW);
-
-                    // 2. Main Frame (Brown part)
-                    ctx.fillStyle = '#795548';
+                    
+                    // [MODIFICATION] Redesigned with black, pink, red
+                    ctx.fillStyle = '#212121'; // Main Frame (Black)
                     ctx.fillRect(barrelL, -monitorH / 2 - framePadding, monitorW, monitorH + framePadding * 2);
 
-                    // 3. White Top Highlight on Frame
-                    ctx.fillStyle = '#FFFFFF';
+                    ctx.fillStyle = '#FF69B4'; // Pink Top Highlight
                     ctx.fillRect(barrelL, -monitorH / 2 - framePadding, monitorW, framePadding);
                     
-                    // 4. Screen (Red part)
-                    ctx.fillStyle = this.color;
+                    ctx.fillStyle = this.color; // Screen (Red part)
                     ctx.fillRect(barrelL + framePadding/2, -monitorH / 2, monitorW - framePadding, monitorH);
 
                 } else if (isLiam) {
-                    const turretW = this.width * 0.7, turretH = this.height * 0.5, barrelL = this.height * 0.7;
+                    const turretW = this.width * 0.7, turretH = this.height * 0.5;
+                    const barrelL = this.height * 0.9; // [MODIFICATION] Increased barrel length
                     ctx.fillStyle = '#616161'; // Barrel
                     ctx.fillRect(0, -barrelW/2, barrelL, barrelW);
                     ctx.fillStyle = '#212121'; // Turret base
@@ -1562,10 +1627,9 @@
                 } else if (isNiwan) {
                     const turretW = this.width * 0.7;
                     const turretH = this.height * 0.4;
-                    const barrelL = this.height * 0.8;
+                    const barrelL = this.height * 0.9; // [MODIFICATION] Increased barrel length
                     
-                    // Draw Turret Base (sleek, angled)
-                    ctx.fillStyle = this.color;
+                    ctx.fillStyle = this.color; // Turret Base
                     ctx.beginPath();
                     ctx.moveTo(0, -turretH / 2);
                     ctx.lineTo(turretW * 0.4, -turretH / 2);
@@ -1575,12 +1639,10 @@
                     ctx.closePath();
                     ctx.fill();
                     
-                    // Draw Barrel
-                    ctx.fillStyle = getShadedColor(this.color, 40);
+                    ctx.fillStyle = getShadedColor(this.color, 40); // Barrel
                     ctx.fillRect(turretW * 0.1, -barrelW / 2, barrelL, barrelW);
                     
-                    // Add a white highlight line on barrel
-                    ctx.strokeStyle = '#FFFFFF';
+                    ctx.strokeStyle = '#FFFFFF'; // White highlight
                     ctx.lineWidth = 1.5;
                     ctx.beginPath();
                     ctx.moveTo(turretW * 0.1, 0);
@@ -1590,7 +1652,7 @@
                 ctx.restore();
                 if (this.shielded) { ctx.save(); ctx.globalAlpha = 0.5 + Math.sin(Date.now() / 200) * 0.2; ctx.translate(this.x, this.y); ctx.strokeStyle = 'deepskyblue'; ctx.lineWidth = 4; ctx.shadowColor = 'rgba(0, 191, 255, 0.8)'; ctx.shadowBlur = 10; ctx.beginPath(); ctx.arc(0, 0, Math.max(this.width, this.height) / 2 + 8, 0, Math.PI * 2); ctx.stroke(); ctx.restore(); }
                 if (this.isImmortal) { ctx.save(); ctx.globalAlpha = 0.6 + Math.sin(Date.now() / 150) * 0.3; ctx.translate(this.x, this.y); ctx.strokeStyle = 'gold'; ctx.lineWidth = 5; ctx.shadowColor = 'rgba(255, 215, 0, 0.9)'; ctx.shadowBlur = 12; ctx.beginPath(); ctx.arc(0, 0, Math.max(this.width, this.height) / 2 + 10, 0, Math.PI * 2); ctx.stroke(); ctx.restore(); }
-                if (uiLayer) this.updateHealthBarPosition();
+                if (!this.isPreview) this.updateHealthBarPosition();
             }
              drawMovementTrail() {
                 let color;
@@ -1612,13 +1674,9 @@
                     });
                 }
             }
-            updateHealthBarPosition() {
-                if (!this.healthBarContainer) return;
-                const barX = (this.x - this.width / 2);
-                const barY = (this.y - this.height / 2 - 20); // Raised a bit
-                this.healthBarContainer.style.transform = `translate(${barX}px, ${barY}px)`;
-            }
+            updateHealthBarPosition() { if (!this.healthBarContainer) return; const barX = (this.x - this.width / 2); const barY = (this.y - this.height / 2 - 25); this.healthBarContainer.style.transform = `translate(${barX}px, ${barY}px)`; }
             updateHealthBar() { if (!this.healthBarDiv) return; const healthPercentage = (this.health / this.maxHealth) * 100; this.healthBarDiv.style.width = healthPercentage + '%'; if (healthPercentage <= 0) this.healthBarDiv.style.backgroundColor = 'black'; else if (healthPercentage < 30) this.healthBarDiv.style.backgroundColor = 'red'; else if (healthPercentage < 60) this.healthBarDiv.style.backgroundColor = 'orange'; else this.healthBarDiv.style.backgroundColor = 'limegreen'; this.shieldIndicatorDiv.style.display = this.shielded ? 'block' : 'none'; this.immortalIndicatorDiv.style.display = this.isImmortal ? 'block' : 'none'; }
+            updateEnergyBar() { if (!this.energyBarDiv || !this.ability || this.ability.type !== 'ENERGY_BALL') return; this.energyBarWrapper.style.display = 'block'; const energyPercentage = (this.energy / this.ability.maxEnergy) * 100; this.energyBarDiv.style.width = energyPercentage + '%'; }
             move(direction) { const currentSpeed = this.speed * (this.speedBoostActive ? (this.ability && this.ability.type === 'AEGIS_FIELD' && this.isAbilityActive ? this.ability.speedBoostMultiplier : 1.7) : 1); const prevX = this.x; const prevY = this.y; const hitBoxWidth = this.width * 0.9; const hitBoxHeight = this.height * 0.9; const newXUnchecked = this.x + direction * currentSpeed * Math.cos(this.angle); const newYUnchecked = this.y + direction * currentSpeed * Math.sin(this.angle); this.x = newXUnchecked; if (this.checkCollision(this.x, prevY, hitBoxWidth, hitBoxHeight) || this.checkBoundaryCollisionX()) { this.x = prevX; } this.y = newYUnchecked; if (this.checkCollision(prevX, this.y, hitBoxWidth, hitBoxHeight) || this.checkBoundaryCollisionY()) { this.y = prevY; } if(this.x !== prevX && this.y !== prevY && this.checkCollision(this.x, this.y, hitBoxWidth, hitBoxHeight)){ this.x = prevX; this.y = prevY; } if (direction !== 0 && (this.x !== prevX || this.y !== prevY)) { this.hasMovedThisFrame = true; } }
             checkBoundaryCollisionX() { return (this.x - this.width / 2 < 0 || this.x + this.width / 2 > G_MAP_WIDTH); }
             checkBoundaryCollisionY() { return (this.y - this.height / 2 < 0 || this.y + this.height / 2 > G_MAP_HEIGHT); }
@@ -1648,13 +1706,21 @@
                 } return false;
             }
             takeDamage(amount, instigatorTeam) {
+                // [MODIFICATION] Niwan ability logic
+                if (this.isEnergyBall) {
+                    const healAmount = amount * (this.ability.healthConversion || 0.5);
+                    this.health = Math.min(this.maxHealth, this.health + healAmount);
+                    if (!this.isPreview) this.updateHealthBar();
+                    return;
+                }
                 if (this.shielded || this.isImmortal || this.team === instigatorTeam) return;
-                this.health -= amount; this.updateHealthBar();
+                this.health -= amount; 
+                if (!this.isPreview) this.updateHealthBar();
                 if (this.health <= 0) { this.health = 0; this.destroy(instigatorTeam); }
                 else if (this.isAI && this.aiDifficulty === "FREESTYLE" && this.aiEvadeTimer <= 0) { this.aiState = "EVADING"; this.aiEvadeTimer = 300 + Math.random() * 300; }
             }
             destroy(killerTeam) {
-                this.updateHealthBar();
+                if (!this.isPreview) this.updateHealthBar();
 
                 if (gameMode.startsWith('TDM')) {
                     if (killerTeam === 1) {
@@ -1669,7 +1735,6 @@
                     } else if (team2Score >= TDM_SCORE_LIMIT) {
                         endGame("Team 2 (Red) Wins!");
                     } else {
-                        // Respawn logic for TDM
                         this.respawn();
                     }
                 } else { // 1v1 modes
@@ -1701,10 +1766,14 @@
                 this.health = this.maxHealth;
                 this.shielded = true; // Brief respawn shield
                 this.shieldTimer = 3000;
-                this.updateHealthBar();
+                if (!this.isPreview) this.updateHealthBar();
+                if (this.ability && this.ability.type === 'ENERGY_BALL') {
+                    this.energy = 0;
+                    if (!this.isPreview) this.updateEnergyBar();
+                }
             }
             checkCollision(checkX, checkY, colWidth = this.width, colHeight = this.height) { const tankRect = { x: checkX - colWidth / 2, y: checkY - colHeight / 2, width: colWidth, height: colHeight }; for (const obs of obstacles) { if (rectIntersect(tankRect, obs)) return true; } for(const otherTank of allTanks) { if(otherTank !== this && otherTank.health > 0) { const otherTankRect = { x: otherTank.x - otherTank.width / 2, y: otherTank.y - otherTank.height / 2, width: otherTank.width, height: otherTank.height }; if (rectIntersect(tankRect, otherTankRect)) return true; } } return false; }
-            applyPowerUp(type) { const duration = POWERUP_DURATION_BASE * this.powerUpDurationMultiplier; if (type === 'shield') { this.shielded = true; this.shieldTimer = duration; this.shieldIndicatorDiv.style.display = 'block'; } else if (type === 'speed') { this.speedBoostActive = true; this.speedBoostTimer = duration; } else if (type === 'health') { this.health = Math.min(this.maxHealth, this.health + (MAX_HEALTH_BASE * 0.4)); this.updateHealthBar(); } }
+            applyPowerUp(type) { const duration = POWERUP_DURATION_BASE * this.powerUpDurationMultiplier; if (type === 'shield') { this.shielded = true; this.shieldTimer = duration; this.shieldIndicatorDiv.style.display = 'block'; } else if (type === 'speed') { this.speedBoostActive = true; this.speedBoostTimer = duration; } else if (type === 'health') { this.health = Math.min(this.maxHealth, this.health + (MAX_HEALTH_BASE * 0.4)); if (!this.isPreview) this.updateHealthBar(); } }
             updatePowerUps(rawDeltaTime_ms) { if (this.shielded) { this.shieldTimer -= rawDeltaTime_ms; if (this.shieldTimer <= 0) { this.shielded = false; this.shieldTimer = 0; this.shieldIndicatorDiv.style.display = 'none'; } } if (this.speedBoostActive) { this.speedBoostTimer -= rawDeltaTime_ms; if (this.speedBoostTimer <= 0) { this.speedBoostActive = false; this.speedBoostTimer = 0; } } }
 
             canUseAbility() {
@@ -1712,11 +1781,22 @@
                 if (this.ability.type === 'MULTI_DASH') {
                     return this.ability.currentCharges > 0 || (this.ability.currentCharges === 0 && !this.ability.isChargeCooldown);
                 }
+                if (this.ability.type === 'ENERGY_BALL') {
+                    return this.energy >= this.ability.maxEnergy;
+                }
                 return Date.now() - this.lastAbilityUseTime >= this.ability.cooldown;
+            }
+            
+            // [MODIFICATION] Niwan energy gain
+            gainEnergy(damageDealt) {
+                if (!this.ability || this.ability.type !== 'ENERGY_BALL') return;
+                this.energy += damageDealt * 0.8; // Gain energy based on damage
+                this.energy = Math.min(this.energy, this.ability.maxEnergy);
+                if (!this.isPreview) this.updateEnergyBar();
             }
 
             stun(duration) {
-                if(this.isImmortal) return;
+                if(this.isImmortal || this.isEnergyBall) return;
                 this.isStunned = true;
                 this.stunTimer = Math.max(this.stunTimer, duration);
                 if (this.isAI) {
@@ -1732,55 +1812,32 @@
 
                 if (this.ability.type === 'MULTI_DASH') {
                     if (this.ability.currentCharges > 0) {
-                        const oldX = this.x; // Store old position
-                        const oldY = this.y;
-
-                        const dashDistance = TANK_SIZE * 4; // Increased dash distance for feel
+                        const oldX = this.x; const oldY = this.y;
+                        const dashDistance = TANK_SIZE * 4; 
                         const dashX = this.x + dashDistance * Math.cos(this.angle);
                         const dashY = this.y + dashDistance * Math.sin(this.angle);
                         
-                        let newX = this.x; // Keep track of final position
-                        let newY = this.y;
-
+                        let newX = this.x; let newY = this.y;
                         const tempX = Math.max(this.width / 2, Math.min(G_MAP_WIDTH - this.width / 2, dashX));
                         const tempY = Math.max(this.height / 2, Math.min(G_MAP_HEIGHT - this.height / 2, dashY));
 
                         if (!this.checkCollision(tempX, tempY)) {
-                           this.x = tempX;
-                           this.y = tempY;
-                           newX = tempX;
-                           newY = tempY;
+                           this.x = tempX; this.y = tempY; newX = tempX; newY = tempY;
                         } else {
-                            const shortDashX = this.x + (dashDistance/2) * Math.cos(this.angle);
-                            const shortDashY = this.y + (dashDistance/2) * Math.sin(this.angle);
-                            const tempShortX = Math.max(this.width / 2, Math.min(G_MAP_WIDTH - this.width / 2, shortDashX));
-                            const tempShortY = Math.max(this.height / 2, Math.min(G_MAP_HEIGHT - this.height / 2, shortDashY));
+                            const shortDashX = this.x + (dashDistance/2) * Math.cos(this.angle); const shortDashY = this.y + (dashDistance/2) * Math.sin(this.angle);
+                            const tempShortX = Math.max(this.width / 2, Math.min(G_MAP_WIDTH - this.width / 2, shortDashX)); const tempShortY = Math.max(this.height / 2, Math.min(G_MAP_HEIGHT - this.height / 2, shortDashY));
                             if (!this.checkCollision(tempShortX, tempShortY)) {
-                                this.x = tempShortX;
-                                this.y = tempShortY;
-                                newX = tempShortX;
-                                newY = tempShortY;
+                                this.x = tempShortX; this.y = tempShortY; newX = tempShortX; newY = tempShortY;
                             }
                         }
-                        
-                        // Add VFX after determining new position
-                        const dx = newX - oldX;
-                        const dy = newY - oldY;
-                        const dist = Math.hypot(dx, dy);
-                        if (dist > 1) { // Only show VFX if tank actually moved
+                        const dx = newX - oldX; const dy = newY - oldY; const dist = Math.hypot(dx, dy);
+                        if (dist > 1) { 
                             const trailCount = 20;
                             for (let i = 0; i < trailCount; i++) {
                                 const progress = i / trailCount;
-                                particles.push({
-                                    x: oldX + dx * progress + (Math.random() - 0.5) * 12,
-                                    y: oldY + dy * progress + (Math.random() - 0.5) * 12,
-                                    size: Math.random() * 5 + 3,
-                                    life: 18 + Math.random() * 12,
-                                    color: `rgba(255, 105, 180, ${0.9 - progress * 0.8})` // Pink, fading
-                                });
+                                particles.push({ x: oldX + dx * progress + (Math.random() - 0.5) * 12, y: oldY + dy * progress + (Math.random() - 0.5) * 12, size: Math.random() * 5 + 3, life: 18 + Math.random() * 12, color: `rgba(255, 105, 180, ${0.9 - progress * 0.8})` });
                             }
                         }
-
                         this.ability.currentCharges--;
                         if (this.ability.currentCharges === 0) {
                             this.ability.isChargeCooldown = true;
@@ -1792,9 +1849,17 @@
                     this.isAbilityActive = true;
 
                     switch(this.ability.type) {
+                        case 'ENERGY_BALL':
+                            this.isEnergyBall = true;
+                            this.energyBallTimer = this.ability.duration;
+                            this.energy = 0;
+                            if (!this.isPreview) this.updateEnergyBar();
+                            break;
+                        case 'REFLECT_SHIELD':
+                            this.abilityDurationTimer = this.ability.duration;
+                            break;
                         case 'AEGIS_FIELD':
-                            this.speedBoostActive = true;
-                            this.speedBoostTimer = this.ability.duration;
+                            this.speedBoostActive = true; this.speedBoostTimer = this.ability.duration;
                             this.abilityDurationTimer = this.ability.duration;
                             if (gameMode.startsWith('TDM')) {
                                 activeEffects.push(new AbilityEffect(this.x, this.y, this.ability.fieldRadius, this.ability.duration, this.team, this.ability.teamHealRate));
@@ -1804,32 +1869,23 @@
                             for (const tank of allTanks) {
                                 if (tank !== this && tank.team !== this.team && tank.health > 0) {
                                     const dist = Math.hypot(this.x - tank.x, this.y - tank.y);
-                                    if (dist <= this.ability.range) {
-                                        tank.stun(this.ability.duration);
-                                    }
+                                    if (dist <= this.ability.range) tank.stun(this.ability.duration);
                                 }
                             }
-                            particles.push({
-                                isStunWave: true, x: this.x, y: this.y, radius: 0,
-                                maxRadius: this.ability.range, life: 30, maxLife: 30,
-                                color: 'rgba(255, 255, 100, 0.8)'
-                            });
+                            particles.push({ isStunWave: true, x: this.x, y: this.y, radius: 0, maxRadius: this.ability.range, life: 30, maxLife: 30, color: 'rgba(255, 255, 100, 0.8)' });
                             this.abilityDurationTimer = 500;
                             break;
                         case 'SHIELD_FIREBALL':
-                            this.shielded = true;
-                            this.shieldTimer = this.ability.shieldDuration;
+                            this.shielded = true; this.shieldTimer = this.ability.shieldDuration;
                             this.abilityEffect = 'fireball_next_shot';
                             this.abilityDurationTimer = this.ability.shieldDuration;
                             break;
                         case 'QUICK_AIM':
-                            this.originalTurretTurnSpeed = this.turretTurnSpeed;
-                            this.turretTurnSpeed *= 3;
+                            this.originalTurretTurnSpeed = this.turretTurnSpeed; this.turretTurnSpeed *= 3;
                             this.abilityDurationTimer = this.ability.duration;
                             break;
                         case 'IMMORTAL_RAGE':
-                            this.isImmortal = true;
-                            this.immortalTimer = this.ability.duration;
+                            this.isImmortal = true; this.immortalTimer = this.ability.duration;
                             this.abilityDurationTimer = this.ability.duration;
                             break;
                         case 'RAPID_FIRE':
@@ -1838,28 +1894,34 @@
                             break;
                     }
                 }
-                this.updateSkillButtonDisplay();
+                if (!this.isPreview) this.updateSkillButtonDisplay();
             }
             updateAbility(rawDeltaTime_ms) {
                 if (this.isAbilityActive) {
                     this.abilityDurationTimer -= rawDeltaTime_ms;
+                    
+                    if (this.ability.type === 'REFLECT_SHIELD') { // [MODIFICATION] Update shield position
+                        const shieldWidth = this.width * 1.5;
+                        const shieldHeight = 10;
+                        const shieldDist = this.width / 2 + 5;
+                        const shieldCenterX = this.x + shieldDist * Math.cos(this.angle);
+                        const shieldCenterY = this.y + shieldDist * Math.sin(this.angle);
+                        this.reflectShieldRect = { x: shieldCenterX - shieldWidth / 2, y: shieldCenterY - shieldHeight / 2, w: shieldWidth, h: shieldHeight, angle: this.angle };
+                    }
+
                     if(this.ability.type === 'AEGIS_FIELD' && this.health < this.maxHealth) {
                         this.health += this.ability.selfHealRate * (rawDeltaTime_ms / 1000);
                         this.health = Math.min(this.maxHealth, this.health);
-                        this.updateHealthBar();
+                        if (!this.isPreview) this.updateHealthBar();
                     }
 
                     if (this.abilityDurationTimer <= 0) {
                         this.isAbilityActive = false;
                         this.abilityDurationTimer = 0;
-                        if (this.ability.type === 'QUICK_AIM') {
-                            this.turretTurnSpeed = this.originalTurretTurnSpeed;
-                        } else if (this.ability.type === 'RAPID_FIRE') {
-                            this.shootCooldownValue = this.originalShootCooldownValue;
-                        } else if(this.ability.type === 'AEGIS_FIELD') {
-                             this.speedBoostActive = false; // Turn off speed boost specifically
-                             this.speedBoostTimer = 0;
-                        }
+                        this.reflectShieldRect = null;
+                        if (this.ability.type === 'QUICK_AIM') this.turretTurnSpeed = this.originalTurretTurnSpeed;
+                        else if (this.ability.type === 'RAPID_FIRE') this.shootCooldownValue = this.originalShootCooldownValue;
+                        else if(this.ability.type === 'AEGIS_FIELD') { this.speedBoostActive = false; this.speedBoostTimer = 0; }
                         this.abilityEffect = null;
                     }
                 }
@@ -1878,7 +1940,7 @@
                 }
             }
             updateSkillButtonDisplay() {
-                if (!uiLayer) return; // Don't run this for loading screen tanks
+                if (this.isPreview) return;
                 let skillButtonElem;
                 if (this === player1) skillButtonElem = skillButtonP1;
                 else if (this === player2) skillButtonElem = skillButtonP2;
@@ -1887,6 +1949,7 @@
                 const skillNameTextElem = skillButtonElem.querySelector('.skill-name-text');
                 const chargesTextElem = skillButtonElem.querySelector('.charges-text');
                 const cooldownTextElem = skillButtonElem.querySelector('.cooldown-text');
+                skillButtonElem.classList.remove('energy-ready');
 
                 if (!this.ability) {
                     if (this === player1) skillButtonContainerP1.style.display = 'none';
@@ -1914,6 +1977,8 @@
                         } else if (this.ability.currentCharges === 0 && !this.ability.isChargeCooldown) {
                             cooldownTextElem.textContent = "RDY";
                         }
+                    } else if (this.ability.type === 'ENERGY_BALL') {
+                        skillButtonElem.classList.add('energy-ready');
                     }
                 } else {
                     skillButtonElem.classList.add('on-cooldown');
@@ -1923,6 +1988,9 @@
                          remainingCooldown = Math.ceil(this.abilityDurationTimer / 1000);
                          skillNameTextElem.textContent = "ACTIVE";
                          cooldownTextElem.textContent = remainingCooldown > 0 ? `${remainingCooldown}s` : "RDY";
+                    } else if (this.ability.type === 'ENERGY_BALL') {
+                        skillNameTextElem.textContent = "CHARGING";
+                        cooldownTextElem.textContent = `${Math.floor((this.energy / this.ability.maxEnergy) * 100)}%`;
                     } else {
                          remainingCooldown = Math.ceil((this.ability.cooldown - (Date.now() - this.lastAbilityUseTime)) / 1000);
                          cooldownTextElem.textContent = remainingCooldown > 0 ? `${remainingCooldown}s` : "RDY";
@@ -2150,11 +2218,18 @@
             }
             dealDamage(tank) {
                 tank.takeDamage(this.damage, this.owner.team);
-                // Lifesteal check for Liam's tank
-                if (this.owner && this.owner.skinId === 'soccer_collab' && this.owner.isAbilityActive) {
-                    const healAmount = this.damage * this.owner.ability.lifestealPercentage;
-                    this.owner.health = Math.min(this.owner.maxHealth, this.owner.health + healAmount);
-                    this.owner.updateHealthBar();
+                
+                if (this.owner) {
+                    // Lifesteal check for Liam's tank
+                    if (this.owner.skinId === 'soccer_collab' && this.owner.isAbilityActive) {
+                        const healAmount = this.damage * this.owner.ability.lifestealPercentage;
+                        this.owner.health = Math.min(this.owner.maxHealth, this.owner.health + healAmount);
+                        if (!this.owner.isPreview) this.owner.updateHealthBar();
+                    }
+                    // Energy gain for Niwan's tank
+                    if (this.owner.skinId === 'niwan_tank') {
+                        this.owner.gainEnergy(this.damage);
+                    }
                 }
             }
         }
@@ -2178,7 +2253,15 @@
                         if (dist < this.radius) {
                             tank.health += this.healRate * (deltaTime_ms / 1000);
                             tank.health = Math.min(tank.maxHealth, tank.health);
-                            tank.updateHealthBar();
+                            if (!tank.isPreview) tank.updateHealthBar();
+                            // [MODIFICATION] Add healing particle effect
+                             particles.push({
+                                x: tank.x + (Math.random() - 0.5) * tank.width,
+                                y: tank.y + (Math.random() - 0.5) * tank.height,
+                                size: Math.random() * 4 + 2,
+                                life: 25,
+                                color: 'rgba(124, 252, 0, 0.7)' // Lime green
+                            });
                         }
                     }
                 });
@@ -2229,7 +2312,6 @@
                 tempSelectedMapId = 'division';
             }
             
-            // On desktop, get map from skin preview container. On mobile, from map selector screen.
             const mapSelector = document.getElementById('mapSelectorMenu');
             currentMapId = tempSelectedMapId || (mapSelector ? mapSelector.value : null) || currentProfileData.selectedMapId || 'classic';
             savePlayerData();
@@ -2323,7 +2405,7 @@
             lastTime = currentTime;
             const normalizedDeltaTime = deltaTime_ms / (1000/60);
 
-            if (player1 && player1.health > 0 && !player1.isStunned) {
+            if (player1 && player1.health > 0 && !player1.isStunned && !player1.isEnergyBall) {
                 player1.hasMovedThisFrame = false;
                 if (isTouch) {
                     if (p1JoystickMoveState.active && (p1JoystickMoveState.joyX !== 0 || p1JoystickMoveState.joyY !== 0)) {
@@ -2354,7 +2436,7 @@
                     }
                 }
             }
-            if (player2 && player2.health > 0 && !player2.isStunned) {
+            if (player2 && player2.health > 0 && !player2.isStunned && !player2.isEnergyBall) {
                 player2.hasMovedThisFrame = false;
                 if (gameMode === 'twoPlayer' || gameMode === 'TDM_2P') {
                      if (isTouch) {
@@ -2389,7 +2471,16 @@
                 if (tank.isAI) tank.updateAI(deltaTime_ms);
             });
 
-            for (let i = bullets.length - 1; i >= 0; i--) { const bullet = bullets[i]; bullet.update(); if (bullet.x < -BULLET_SIZE * 3 || bullet.x > G_MAP_WIDTH + BULLET_SIZE * 3 || bullet.y < -BULLET_SIZE * 3 || bullet.y > G_MAP_HEIGHT + BULLET_SIZE * 3) { bullets.splice(i, 1); continue; } let hit = false; for (const obs of obstacles) if (pointInRect({x: bullet.x, y: bullet.y}, obs)) { bullets.splice(i, 1); hit = true; break; } if (hit) continue; for (const tank of allTanks) { if (tank.health > 0 && bullet.team !== tank.team) { const dist = Math.hypot(bullet.x - tank.x, bullet.y - tank.y); if (dist < tank.width / 2 + bullet.size / 2) { bullet.dealDamage(tank); bullets.splice(i, 1); hit = true; break; } } } if (hit) continue; }
+            for (let i = bullets.length - 1; i >= 0; i--) { const bullet = bullets[i]; bullet.update(); if (bullet.x < -BULLET_SIZE * 3 || bullet.x > G_MAP_WIDTH + BULLET_SIZE * 3 || bullet.y < -BULLET_SIZE * 3 || bullet.y > G_MAP_HEIGHT + BULLET_SIZE * 3) { bullets.splice(i, 1); continue; } let hit = false; for (const obs of obstacles) if (pointInRect({x: bullet.x, y: bullet.y}, obs)) { bullets.splice(i, 1); hit = true; break; } if (hit) continue; for (const tank of allTanks) { if (tank.health > 0 && bullet.team !== tank.team) { 
+                // [MODIFICATION] RCB Shield reflection logic
+                if (tank.skinId === 'rcb_champion' && tank.isAbilityActive && tank.reflectShieldRect && rectIntersect({x: bullet.x - bullet.size/2, y: bullet.y - bullet.size/2, width: bullet.size, height: bullet.size }, tank.reflectShieldRect)) {
+                    bullet.team = tank.team;
+                    bullet.owner = tank;
+                    bullet.angle = 2 * tank.reflectShieldRect.angle - bullet.angle + Math.PI; // Reflect angle
+                    hit = true; // "Hit" the shield, but don't get destroyed
+                    break;
+                }
+                const dist = Math.hypot(bullet.x - tank.x, bullet.y - tank.y); if (dist < tank.width / 2 + bullet.size / 2) { bullet.dealDamage(tank); bullets.splice(i, 1); hit = true; break; } } } if (hit) continue; }
             for (let i = powerUps.length - 1; i >= 0; i--) { const pu = powerUps[i]; pu.update(); if (!pu.active) { powerUps.splice(i, 1); continue; } for (const tank of allTanks) { if (tank.health > 0) { const dist = Math.hypot(tank.x - pu.x, tank.y - pu.y); if (dist < tank.width / 2 + pu.radius) { tank.applyPowerUp(pu.type); pu.active = false; break; } } } }
             for (let i = activeEffects.length - 1; i >= 0; i--) { const effect = activeEffects[i]; effect.update(deltaTime_ms); if (!effect.active) { activeEffects.splice(i, 1); } }
             if (Date.now() - lastPowerUpSpawnTime > POWERUP_SPAWN_INTERVAL) { spawnPowerUp(); lastPowerUpSpawnTime = Date.now(); }
@@ -2540,7 +2631,8 @@
                 if (player && player.health > 0 && !isTouch) player.activateAbility();
             });
         }
-
+        
+        // [FIX] Pass the isPreview flag to the Tank constructor
         function drawMiniTankPreview(canvasEl, skinId) {
             if (!canvasEl) return;
             const skin = SKINS[skinId]; 
@@ -2548,11 +2640,11 @@
             const c = canvasEl.getContext('2d'); const w = canvasEl.width; const h = canvasEl.height;
             c.clearRect(0, 0, w, h);
             
-            const miniTank = new Tank('preview', w/2, h/2 + 5, -Math.PI/2, 1, false, skinId, 'NORMAL');
+            const miniTank = new Tank('preview', w/2, h/2 + 5, -Math.PI/2, 1, false, skinId, 'NORMAL', true); // Pass true for isPreview
             miniTank.turretAngle = -Math.PI/2;
             c.save();
-            c.scale(0.8, 0.8); // Scale down the drawing
-            c.translate(w*0.125, h*0.125); // Adjust position after scaling
+            c.scale(0.8, 0.8);
+            c.translate(w*0.125, h*0.125);
             miniTank.draw();
             c.restore();
         }
@@ -2681,21 +2773,26 @@
             });
         }
 
-
+        // [FIX] Made profile screen population more robust.
         function populateProfileScreen() {
-            if (!profileScreen.classList.contains('active')) return;
-            usernameInputProfile.value = currentProfileData.username || "Guest";
-            usernameInputProfile.readOnly = !currentUser;
-            profileMoney.textContent = `$${currentProfileData.money || 0}`;
-            profileGamesPlayed.textContent = currentProfileData.gamesPlayed || 0;
-            profileWins.textContent = currentProfileData.wins || 0;
-            profileLosses.textContent = currentProfileData.losses || 0;
-            profileHardAIWins.textContent = currentProfileData.hardAIWins || 0;
-            profileFreestyleAIWins.textContent = currentProfileData.freestyleAIWins || 0;
-            ownedSkinsList.innerHTML = '';
-            (currentProfileData.ownedSkins || ['default']).forEach(skinId => {
-                const skin = SKINS[skinId]; if (skin) { const li = document.createElement('li'); const skinColorDot = document.createElement('span'); skinColorDot.style.display = 'inline-block'; skinColorDot.style.width = '12px'; skinColorDot.style.height = '12px'; skinColorDot.style.borderRadius = '50%'; skinColorDot.style.backgroundColor = skin.color; skinColorDot.style.marginRight = '10px'; skinColorDot.style.border = '1px solid rgba(255,255,255,0.4)'; li.appendChild(skinColorDot); const skinNameSpan = document.createElement('span'); skinNameSpan.textContent = skin.name; li.appendChild(skinNameSpan); ownedSkinsList.appendChild(li); }
-            });
+            try {
+                if (!profileScreen.classList.contains('active')) return;
+                usernameInputProfile.value = currentProfileData.username || "Guest";
+                usernameInputProfile.readOnly = !currentUser;
+                profileMoney.textContent = `$${currentProfileData.money || 0}`;
+                profileGamesPlayed.textContent = currentProfileData.gamesPlayed || 0;
+                profileWins.textContent = currentProfileData.wins || 0;
+                profileLosses.textContent = currentProfileData.losses || 0;
+                profileHardAIWins.textContent = currentProfileData.hardAIWins || 0;
+                profileFreestyleAIWins.textContent = currentProfileData.freestyleAIWins || 0;
+                ownedSkinsList.innerHTML = '';
+                (currentProfileData.ownedSkins || ['default']).forEach(skinId => {
+                    const skin = SKINS[skinId]; if (skin) { const li = document.createElement('li'); const skinColorDot = document.createElement('span'); skinColorDot.style.display = 'inline-block'; skinColorDot.style.width = '12px'; skinColorDot.style.height = '12px'; skinColorDot.style.borderRadius = '50%'; skinColorDot.style.backgroundColor = skin.color; skinColorDot.style.marginRight = '10px'; skinColorDot.style.border = '1px solid rgba(255,255,255,0.4)'; li.appendChild(skinColorDot); const skinNameSpan = document.createElement('span'); skinNameSpan.textContent = skin.name; li.appendChild(skinNameSpan); ownedSkinsList.appendChild(li); }
+                });
+            } catch (error) {
+                console.error("Error populating profile screen:", error);
+                ownedSkinsList.innerHTML = '<li>Error loading profile data.</li>';
+            }
         }
         usernameInputProfile.addEventListener('change', (e) => {
             if (currentUser) {
@@ -2777,8 +2874,9 @@
             
             let progress = 0;
             ctx = loadingCtx; // Temporarily use loading context for tank drawing
-            let loadingTank1 = new Tank('lt1', 50, 75, 0, 1, false, 'default');
-            let loadingTank2 = new Tank('lt2', 250, 75, Math.PI, 2, false, 'bruiser');
+            // [FIX] Pass isPreview flag to loading screen tanks
+            let loadingTank1 = new Tank('lt1', 50, 75, 0, 1, false, 'default', 'NORMAL', true);
+            let loadingTank2 = new Tank('lt2', 250, 75, Math.PI, 2, false, 'bruiser', 'NORMAL', true);
             let loadingBullets = [];
 
             const updateProgress = () => {
@@ -2962,3 +3060,4 @@
     </script>
 </body>
 </html>
+```
